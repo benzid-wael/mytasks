@@ -1,31 +1,42 @@
 package entities
 
-import "time"
-
-type TaskStatus string
-
-const (
-	ToDo       TaskStatus = "todo"
-	InProgress TaskStatus = "in-progress"
-	Stopped    TaskStatus = "stopped"
-	Completed  TaskStatus = "completed"
-	NotDoing   TaskStatus = "not-doing"
-	Cancelled  TaskStatus = "cancelled"
+import (
+	"time"
 )
 
 type Item struct {
-	Id          int64     `json: "id"`
-	Title       string    `json: "title"`
-	Description string    `json: "description"`
-	CreatedAt   time.Time `json: "created_at"`
-	IsStarred   bool      `json: "is_starred"`
-	Tags        []string  `json: "tags"`
+	Id          int       `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	IsStarred   bool      `json:"is_starred"`
+	Tags        []string  `json:"tags"`
 }
 
-type Note Item
-
-type Task struct {
+type Note struct {
 	Item
-	status   TaskStatus `json: "status"`
-	priority int8       `json:"priority"`
+}
+
+func newItem(id *Sequence, title string, tags ...string) *Item {
+	id.Next()
+	return &Item{
+		Id:          id.Current(),
+		Title:       title,
+		Description: "",
+		CreatedAt:   time.Now(),
+		IsStarred:   false,
+		Tags:        tags,
+	}
+}
+
+func NewNote(id *Sequence, title string, tags ...string) *Note {
+	return &Note{Item: *newItem(id, title, tags...)}
+}
+
+func (item *Item) Star() {
+	item.IsStarred = true
+}
+
+func (item *Item) Unstar() {
+	item.IsStarred = false
 }
