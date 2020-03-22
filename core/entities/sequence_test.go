@@ -11,16 +11,16 @@ func TestSequence_Current_ReturnsCurrentIndex(t *testing.T) {
 	// When
 	actual := testee.Current()
 	// Then
-	assert.Equal(t, actual, 0)
+	assert.Equal(t, 0, actual)
 }
 
 func TestSequence_Next_ReturnsIncrementCurrentIndex(t *testing.T) {
 	// Given
 	current := 2
-	var testee Sequence = Sequence(current)
+	testee := Sequence(current)
 	// When
 	testee.Next()
 	// Then
 	actual := testee.Current()
-	assert.Equal(t, actual, current+1)
+	assert.Equal(t, current+1, actual)
 }

@@ -12,7 +12,7 @@ func TestItem_NewItem_CreatesInstanceWithNextSequenceValue(t *testing.T) {
 	// When
 	item := newItem(&seq, "My item", "")
 	// Then
-	assert.Equal(t, item.Id, expected)
+	assert.Equal(t, expected, item.Id)
 }
 
 func TestItem_NewItem_CreatesUnstarredItem(t *testing.T) {
