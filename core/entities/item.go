@@ -17,20 +17,20 @@ type Note struct {
 	Item
 }
 
-func newItem(id *Sequence, title string, tags ...string) *Item {
+func newItem(id *Sequence, title string, description string, tags ...string) *Item {
 	id.Next()
 	return &Item{
 		Id:          id.Current(),
 		Title:       title,
-		Description: "",
+		Description: description,
 		CreatedAt:   time.Now(),
 		IsStarred:   false,
 		Tags:        tags,
 	}
 }
 
-func NewNote(id *Sequence, title string, tags ...string) *Note {
-	return &Note{Item: *newItem(id, title, tags...)}
+func NewNote(id *Sequence, title string, description string, tags ...string) *Note {
+	return &Note{Item: *newItem(id, title, description, tags...)}
 }
 
 func (item *Item) Star() {
