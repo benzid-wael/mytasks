@@ -7,9 +7,9 @@ type ItemFactory interface {
 type NoteFactory struct{}
 
 func getTags(data map[string]interface{}) []string {
-	var tags []string = make([]string, len(data["tags"].([]string)))
-	for idx, val := range data["tags"].([]string) {
-		tags[idx] = val
+	var tags []string = make([]string, len(data["tags"].([]interface{})))
+	for idx, val := range data["tags"].([]interface{}) {
+		tags[idx] = interface{}(val).(string)
 	}
 
 	return tags
