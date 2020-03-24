@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/benzid-wael/mytasks/core/entities"
+	"github.com/benzid-wael/mytasks/core/infrastructure"
 )
 
 func main() {
@@ -16,4 +17,14 @@ func main() {
 
 	task.TriggerEvent("start")
 	fmt.Printf("[%v] %v\n", task.Status, task.Title)
+
+	repo := infrastructure.NewItemRepository("~")
+	repo.CreateTask(*task)
+	repo.CreateNote(*item)
+
+	items := repo.GetItems()
+	fmt.Println("========== Storage ==========")
+	for idx, item := range items {
+		fmt.Printf("%v. %v\n", idx, item)
+	}
 }
