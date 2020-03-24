@@ -9,3 +9,8 @@ func (seq *Sequence) Next() {
 func (seq *Sequence) Current() int {
 	return int(*seq)
 }
+
+func NewSequence(index int) *Sequence {
+	sequence := Sequence(index)
+	return &sequence
+}

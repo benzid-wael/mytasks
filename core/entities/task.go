@@ -23,7 +23,7 @@ type Task struct {
 
 func NewTask(id *Sequence, title string, description string, tags ...string) *Task {
 	task := &Task{
-		Item:   *newItem(id, title, description, tags...),
+		Item:   *newItem(id, title, "task", description, tags...),
 		Status: ToDo,
 	}
 

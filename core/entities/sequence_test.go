@@ -24,3 +24,10 @@ func TestSequence_Next_ReturnsIncrementCurrentIndex(t *testing.T) {
 	actual := testee.Current()
 	assert.Equal(t, current+1, actual)
 }
+
+func TestSequence_NewSequence_CreatesSequenceWithCorrectState(t *testing.T) {
+	// When
+	seq := NewSequence(12)
+	// Then
+	assert.Equal(t, 12, seq.Current())
+}
