@@ -29,9 +29,6 @@ func (error AlreadyArchivedError) Error() string {
 }
 
 type ItemRepository interface {
-	/*
-		Store raw data. This is will be used only for edit scenarios.
-	*/
 	CreateTask(task entities.Task) error
 	CreateNote(note entities.Note) error
 

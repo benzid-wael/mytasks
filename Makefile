@@ -17,7 +17,8 @@ fmt:
 
 .PHONY: lint
 lint: ## run all the lint tools
-	gometalinter --config gometalinter.json ./...
+	# gometalinter --config gometalinter.json ./...
+	golangci-lint run
 
 .PHONY: help
 help: ## print this help

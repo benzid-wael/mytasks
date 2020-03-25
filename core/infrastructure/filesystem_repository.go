@@ -82,7 +82,7 @@ func (repository *FilesystemItemRepository) store(id string, item interface{}, d
 		items[id] = *data
 	}
 
-	return storeItems(items, repository.StorageDir)
+	return storeItems(items, dir)
 }
 
 func (repository *FilesystemItemRepository) storeItem(id string, item interface{}) error {
@@ -106,9 +106,7 @@ func (repository *FilesystemItemRepository) GetItems() []entities.Manageable {
 	result := make([]entities.Manageable, len(items))
 
 	for _, item := range items {
-		//item, _ := data.(map[string] interface{})
 		id := entities.GetId(item) - 1
-		fmt.Println("item id: ", id)
 		if item != nil {
 			result[id] = entities.CreateItem(item)
 		}
@@ -135,7 +133,7 @@ func (repository *FilesystemItemRepository) UpdateItem(id int, title *string, de
 		if description != nil {
 			item["description"] = *description
 		}
-		if tags != nil {
+		if len(tags) > 0 {
 			item["tags"] = tags
 		}
 
