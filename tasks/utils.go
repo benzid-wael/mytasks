@@ -2,6 +2,8 @@ package tasks
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"log"
 	"os"
 )
 
@@ -22,4 +24,13 @@ func ToMap(object interface{}) (*map[string]interface{}, error) {
 		return nil, err
 	}
 	return &dict, nil
+}
+
+func CreateTempDirectory(prefix string) string {
+	dir, err := ioutil.TempDir("/tmp", prefix+"-*")
+	if err != nil {
+		log.Fatal("Cannot create temp directory: ", err)
+		panic(err)
+	}
+	return dir
 }

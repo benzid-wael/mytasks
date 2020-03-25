@@ -32,11 +32,12 @@ type ItemRepository interface {
 	CreateTask(task entities.Task) error
 	CreateNote(note entities.Note) error
 
+	GetItem(id int) *entities.Manageable
 	GetItems() []entities.Manageable
 
-	UpdateItem(id int, title *string, description *string, tags ...[]string) error
-	DeleteItem(index int) error
+	UpdateItem(id int, title *string, description *string, tags ...string) error
+	DeleteItem(id int) error
 
-	ArchiveItem(index int) error
-	RestoreItem(index int) error
+	ArchiveItem(id int) error
+	RestoreItem(id int) error
 }

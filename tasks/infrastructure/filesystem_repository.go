@@ -106,9 +106,9 @@ func (repository *FilesystemItemRepository) GetItems() []entities.Manageable {
 	result := make([]entities.Manageable, len(items))
 
 	for _, item := range items {
-		id := entities.GetId(item) - 1
+		index := entities.GetId(item) - 1
 		if item != nil {
-			result[id] = entities.CreateItem(item)
+			result[index] = entities.CreateItem(item)
 		}
 	}
 
@@ -123,7 +123,17 @@ func (repository *FilesystemItemRepository) getItem(items map[string]map[string]
 	return nil, DoesNotExistError{"Cannot find any item with ID: " + key}
 }
 
-func (repository *FilesystemItemRepository) UpdateItem(id int, title *string, description *string, tags ...[]string) error {
+func (repository *FilesystemItemRepository) GetItem(id int) *entities.Manageable {
+	items := loadItems(repository.StorageDir)
+	data, err := repository.getItem(items, id)
+	if err != nil {
+		panic(err)
+	}
+	item := entities.CreateItem(data)
+	return &item
+}
+
+func (repository *FilesystemItemRepository) UpdateItem(id int, title *string, description *string, tags ...string) error {
 	items := loadItems(repository.StorageDir)
 
 	if item, err := repository.getItem(items, id); err == nil {
@@ -148,26 +158,26 @@ func (repository *FilesystemItemRepository) UpdateItem(id int, title *string, de
 	}
 }
 
-func (repository *FilesystemItemRepository) DeleteItem(index int) error {
+func (repository *FilesystemItemRepository) DeleteItem(id int) error {
 	items := loadItems(repository.StorageDir)
-	if _, err := repository.getItem(items, index); err != nil {
+	if _, err := repository.getItem(items, id); err != nil {
 		return err
 	}
-	delete(items, getKey(index))
+	delete(items, getKey(id))
 
 	// store new version
 	return storeItems(items, repository.StorageDir)
 }
 
-func (repository *FilesystemItemRepository) ArchiveItem(index int) error {
+func (repository *FilesystemItemRepository) ArchiveItem(id int) error {
 	items := loadItems(repository.StorageDir)
-	item, err := repository.getItem(items, index)
+	item, err := repository.getItem(items, id)
 	if err != nil {
 		return err
 	}
 	archivedItems := loadItems(repository.StorageDir)
-	_, err2 := repository.getItem(archivedItems, index)
-	key := getKey(index)
+	_, err2 := repository.getItem(archivedItems, id)
+	key := getKey(id)
 	if err2 == nil {
 		return AlreadyArchivedError{
 			message: "There is already ab archived item with the same ID: " + key,
@@ -183,14 +193,14 @@ func (repository *FilesystemItemRepository) ArchiveItem(index int) error {
 	return repository.archiveItem(key, item)
 }
 
-func (repository *FilesystemItemRepository) RestoreItem(index int) error {
+func (repository *FilesystemItemRepository) RestoreItem(id int) error {
 	archivedItems := loadItems(repository.ArchiveDir)
-	item, err := repository.getItem(archivedItems, index)
+	item, err := repository.getItem(archivedItems, id)
 	if err != nil {
 		return err
 	}
 
-	key := getKey(index)
+	key := getKey(id)
 	delete(archivedItems, key)
 	err3 := storeItems(archivedItems, repository.StorageDir)
 	if err3 != nil {

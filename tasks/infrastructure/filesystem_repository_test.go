@@ -4,21 +4,10 @@ import (
 	"github.com/benzid-wael/mytasks/tasks"
 	"github.com/benzid-wael/mytasks/tasks/domain/entities"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"log"
 	"path"
 	"strconv"
 	"testing"
 )
-
-func createTempDirectory(prefix string) string {
-	dir, err := ioutil.TempDir("/tmp", prefix+"-*")
-	if err != nil {
-		log.Fatal("Cannot create temp directory: ", err)
-		panic(err)
-	}
-	return dir
-}
 
 func assertItemInDir(t *testing.T, key string, item map[string]interface{}, dir string) {
 	actual := loadItems(dir)
@@ -44,7 +33,7 @@ func Test_GetKey(t *testing.T) {
 
 func Test_NewItemRepository_InitializeEmptyDirectories(t *testing.T) {
 	// Given
-	dir := createTempDirectory("GetItems")
+	dir := tasks.CreateTempDirectory("GetItems")
 	// When
 	NewItemRepository(dir)
 	// Then
@@ -54,7 +43,7 @@ func Test_NewItemRepository_InitializeEmptyDirectories(t *testing.T) {
 
 func TestFilesystemItemRepository_GetItems_ReturnsEmptyArray_ForNonInitializedDirectory(t *testing.T) {
 	// Given
-	dir := createTempDirectory("GetItems")
+	dir := tasks.CreateTempDirectory("GetItems")
 	testee := NewItemRepository(dir)
 	// When
 	actual := testee.GetItems()
@@ -64,7 +53,7 @@ func TestFilesystemItemRepository_GetItems_ReturnsEmptyArray_ForNonInitializedDi
 
 func TestFilesystemItemRepository_GetItems_ReturnsArrayOfItems(t *testing.T) {
 	// Given
-	dir := createTempDirectory("GetItems")
+	dir := tasks.CreateTempDirectory("GetItems")
 	testee := NewItemRepository(dir)
 	item := entities.GenerateDummyRawItem()
 	key := strconv.Itoa(entities.GetId(item))
@@ -79,7 +68,7 @@ func TestFilesystemItemRepository_GetItems_ReturnsArrayOfItems(t *testing.T) {
 func Test_storeItems_StoreItemsIntoJsonFile(t *testing.T) {
 	// Given
 	items := map[string]map[string]interface{}{"1": {"id": 1}}
-	dir := createTempDirectory("storeItems")
+	dir := tasks.CreateTempDirectory("storeItems")
 	NewItemRepository(dir)
 	// When
 	err := storeItems(items, dir)
@@ -92,7 +81,7 @@ func Test_store_StoreNoteIntoJsonFile(t *testing.T) {
 	// Given
 	item := entities.GenerateDummyRawItem()
 	key := strconv.Itoa(entities.GetId(item))
-	dir := createTempDirectory("store")
+	dir := tasks.CreateTempDirectory("store")
 	testee := NewItemRepository(dir)
 	// When
 	err := testee.store(key, item, dir)
@@ -105,7 +94,7 @@ func Test_FilesystemItemRepository_archiveItem_StoresItemIntoArchiveDirectory(t 
 	// Given
 	item := entities.GenerateDummyRawItem()
 	key := strconv.Itoa(entities.GetId(item))
-	dir := createTempDirectory("archiveItem")
+	dir := tasks.CreateTempDirectory("archiveItem")
 	testee := NewItemRepository(dir)
 	// When
 	err := testee.archiveItem(key, item)
@@ -116,7 +105,7 @@ func Test_FilesystemItemRepository_archiveItem_StoresItemIntoArchiveDirectory(t 
 
 func TestFilesystemItemRepository_getItem_ThrowsDoesNotExistError_WhenItemDoesNotExist(t *testing.T) {
 	// Given
-	dir := createTempDirectory("getItem")
+	dir := tasks.CreateTempDirectory("getItem")
 	testee := NewItemRepository(dir)
 	// When
 	_, err := testee.getItem(entities.GenerateDummyRawItems(1), 12)
@@ -126,17 +115,17 @@ func TestFilesystemItemRepository_getItem_ThrowsDoesNotExistError_WhenItemDoesNo
 
 func Test_FilesystemItemRepository_UpdateItem_ThrowsDoesNotExistError_WhenItemDoesNotExist(t *testing.T) {
 	// Given
-	dir := createTempDirectory("UpdateItem")
+	dir := tasks.CreateTempDirectory("UpdateItem")
 	testee := NewItemRepository(dir)
 	// When
-	err := testee.UpdateItem(2, nil, nil, nil)
+	err := testee.UpdateItem(2, nil, nil)
 	// Then
 	assert.Error(t, err)
 }
 
 func Test_FilesystemItemRepository_UpdateItem_UpdatesItem_WhenItemExist(t *testing.T) {
 	// Given
-	dir := createTempDirectory("UpdateItem")
+	dir := tasks.CreateTempDirectory("UpdateItem")
 	testee := NewItemRepository(dir)
 	item := entities.GenerateDummyRawItem()
 	testee.store("1", item, testee.StorageDir)
