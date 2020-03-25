@@ -1,8 +1,8 @@
 package infrastructure
 
 import (
-	"github.com/benzid-wael/mytasks/core"
-	"github.com/benzid-wael/mytasks/core/entities"
+	"github.com/benzid-wael/mytasks/tasks"
+	"github.com/benzid-wael/mytasks/tasks/domain/entities"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"log"
@@ -22,7 +22,7 @@ func createTempDirectory(prefix string) string {
 
 func assertItemInDir(t *testing.T, key string, item map[string]interface{}, dir string) {
 	actual := loadItems(dir)
-	expected, _ := core.ToMap(item)
+	expected, _ := tasks.ToMap(item)
 	assert.Contains(t, actual, key)
 	assert.Equal(t, *expected, actual[key])
 }

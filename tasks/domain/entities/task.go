@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"github.com/benzid-wael/mytasks/tasks/domain/value_objects"
 	"github.com/looplab/fsm"
 )
 
@@ -21,7 +22,7 @@ type Task struct {
 	fsm      *fsm.FSM
 }
 
-func NewTask(id *Sequence, title string, description string, tags ...string) *Task {
+func NewTask(id *value_objects.Sequence, title string, description string, tags ...string) *Task {
 	task := &Task{
 		Item:   *newItem(id, title, "task", description, tags...),
 		Status: ToDo,

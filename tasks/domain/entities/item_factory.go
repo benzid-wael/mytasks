@@ -1,7 +1,9 @@
 package entities
 
+import "github.com/benzid-wael/mytasks/tasks/domain/value_objects"
+
 type ItemFactory interface {
-	Create(sequence *Sequence, data map[string]interface{}) Manageable
+	Create(sequence *value_objects.Sequence, data map[string]interface{}) Manageable
 }
 
 type NoteFactory struct{}
@@ -19,20 +21,20 @@ func GetId(data map[string]interface{}) int {
 	return int(data["id"].(float64))
 }
 
-func (factory *NoteFactory) Create(sequence *Sequence, data map[string]interface{}) Manageable {
+func (factory *NoteFactory) Create(sequence *value_objects.Sequence, data map[string]interface{}) Manageable {
 	return NewNote(sequence, data["title"].(string), data["description"].(string), getTags(data)...)
 }
 
 type TaskFactory struct{}
 
-func (factory *TaskFactory) Create(sequence *Sequence, data map[string]interface{}) Manageable {
+func (factory *TaskFactory) Create(sequence *value_objects.Sequence, data map[string]interface{}) Manageable {
 	return NewTask(sequence, data["title"].(string), data["description"].(string), getTags(data)...)
 }
 
 func CreateItem(item map[string]interface{}) Manageable {
 	kind := item["type"].(string)
 	id := GetId(item)
-	sequence := Sequence(id - 1)
+	sequence := value_objects.Sequence(id - 1)
 	var factory ItemFactory = nil
 
 	switch kind {

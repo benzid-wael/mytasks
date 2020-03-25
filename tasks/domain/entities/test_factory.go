@@ -2,7 +2,7 @@ package entities
 
 import (
 	"github.com/Pallinder/go-randomdata"
-	"github.com/benzid-wael/mytasks/core"
+	"github.com/benzid-wael/mytasks/tasks"
 	"github.com/bluele/factory-go/factory"
 	"strconv"
 )
@@ -28,7 +28,7 @@ var DummyItemFactory = factory.NewFactory(
 
 func GenerateDummyRawItem() map[string]interface{} {
 	note := DummyItemFactory.MustCreate().(*Item)
-	item, _ := core.ToMap(note)
+	item, _ := tasks.ToMap(note)
 	return *item
 }
 
@@ -36,7 +36,7 @@ func GenerateDummyRawItems(size int) map[string]map[string]interface{} {
 	var items map[string]map[string]interface{} = make(map[string]map[string]interface{})
 	for i := 0; i < size; i++ {
 		note := DummyItemFactory.MustCreate().(*Item)
-		item, _ := core.ToMap(note)
+		item, _ := tasks.ToMap(note)
 		items[strconv.Itoa(i)] = *item
 	}
 	return items

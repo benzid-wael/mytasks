@@ -3,8 +3,8 @@ package infrastructure
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/benzid-wael/mytasks/core"
-	"github.com/benzid-wael/mytasks/core/entities"
+	"github.com/benzid-wael/mytasks/tasks"
+	"github.com/benzid-wael/mytasks/tasks/domain/entities"
 	"io/ioutil"
 	"os"
 	"path"
@@ -23,8 +23,8 @@ func NewItemRepository(appDir string) *FilesystemItemRepository {
 	StortageDir := path.Join(DataDir, "./repository")
 	ArchiveDir := path.Join(DataDir, "./archive")
 
-	core.CreateDirIfNotExist(StortageDir)
-	core.CreateDirIfNotExist(ArchiveDir)
+	tasks.CreateDirIfNotExist(StortageDir)
+	tasks.CreateDirIfNotExist(ArchiveDir)
 
 	return &FilesystemItemRepository{
 		MainAppDir: appDir,
@@ -78,7 +78,7 @@ func storeItems(items map[string]map[string]interface{}, dir string) error {
 func (repository *FilesystemItemRepository) store(id string, item interface{}, dir string) error {
 	items := loadItems(dir)
 
-	if data, err := core.ToMap(item); err == nil {
+	if data, err := tasks.ToMap(item); err == nil {
 		items[id] = *data
 	}
 

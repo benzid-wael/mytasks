@@ -1,7 +1,7 @@
 package infrastructure
 
 import (
-	"github.com/benzid-wael/mytasks/core/entities"
+	"github.com/benzid-wael/mytasks/tasks/domain/entities"
 )
 
 type ItemRepositoryError struct {

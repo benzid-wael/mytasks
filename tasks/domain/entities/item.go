@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"github.com/benzid-wael/mytasks/tasks/domain/value_objects"
 	"time"
 )
 
@@ -23,7 +24,7 @@ type Note struct {
 	Item
 }
 
-func newItem(id *Sequence, title string, kind string, description string, tags ...string) *Item {
+func newItem(id *value_objects.Sequence, title string, kind string, description string, tags ...string) *Item {
 	id.Next()
 	return &Item{
 		Id:          id.Current(),
@@ -36,7 +37,7 @@ func newItem(id *Sequence, title string, kind string, description string, tags .
 	}
 }
 
-func NewNote(id *Sequence, title string, description string, tags ...string) *Note {
+func NewNote(id *value_objects.Sequence, title string, description string, tags ...string) *Note {
 	return &Note{Item: *newItem(id, title, "note", description, tags...)}
 }
 

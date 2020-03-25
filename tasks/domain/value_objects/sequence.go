@@ -1,4 +1,4 @@
-package entities
+package value_objects
 
 type Sequence int
 

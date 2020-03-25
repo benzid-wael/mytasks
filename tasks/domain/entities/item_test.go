@@ -1,13 +1,14 @@
 package entities
 
 import (
+	"github.com/benzid-wael/mytasks/tasks/domain/value_objects"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestItem_NewItem_CreatesInstanceWithNextSequenceValue(t *testing.T) {
 	// Given
-	var seq Sequence
+	var seq value_objects.Sequence
 	expected := seq.Current() + 1
 	// When
 	item := newItem(&seq, "My item", "", "")
@@ -17,7 +18,7 @@ func TestItem_NewItem_CreatesInstanceWithNextSequenceValue(t *testing.T) {
 
 func TestItem_NewItem_CreatesUnstarredItem(t *testing.T) {
 	// Given
-	var seq Sequence
+	var seq value_objects.Sequence
 	// When
 	item := newItem(&seq, "My item", "", "")
 	// Then
@@ -26,7 +27,7 @@ func TestItem_NewItem_CreatesUnstarredItem(t *testing.T) {
 
 func TestItem_NewNote_CreatesUnstarredNote(t *testing.T) {
 	// Given
-	var seq Sequence
+	var seq value_objects.Sequence
 	// When
 	note := NewNote(&seq, "My note", "", "")
 	// Then
@@ -35,7 +36,7 @@ func TestItem_NewNote_CreatesUnstarredNote(t *testing.T) {
 
 func TestItem_Star_MarkItemAsStarred(t *testing.T) {
 	// Given
-	var seq Sequence
+	var seq value_objects.Sequence
 	item := newItem(&seq, "My item", "", "")
 	// When
 	item.Star()
@@ -45,7 +46,7 @@ func TestItem_Star_MarkItemAsStarred(t *testing.T) {
 
 func TestItem_Unstar_MarkItemAsUnStarred(t *testing.T) {
 	// Given
-	var seq Sequence
+	var seq value_objects.Sequence
 	testee := newItem(&seq, "My item", "", "")
 	testee.Star()
 	// When

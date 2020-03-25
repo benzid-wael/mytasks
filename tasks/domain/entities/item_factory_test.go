@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"github.com/benzid-wael/mytasks/tasks/domain/value_objects"
 	"gotest.tools/assert"
 	"testing"
 )
@@ -28,7 +29,7 @@ func Test_GetId_extract_id_from_map(t *testing.T) {
 func Test_NoteFactory_Create_Returns_pointer_to_note(t *testing.T) {
 	// Given
 	item := GenerateDummyRawItem()
-	sequence := NewSequence(1)
+	sequence := value_objects.NewSequence(1)
 	factory := new(NoteFactory)
 	// When
 	actual := factory.Create(sequence, item)
