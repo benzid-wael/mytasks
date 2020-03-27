@@ -22,7 +22,7 @@ func (suite *ItemUseCaseTestSuite) SetupTest() {
 
 func (suite *ItemUseCaseTestSuite) Test_ItemUseCase_CreateNote_CreatesNote() {
 	// Given
-	testee := NewItemUseCase(suite.Repo, suite.Seq)
+	testee := NewItemUseCase(suite.Repo, &suite.Seq)
 	// When
 	actual, err := testee.CreateNote("My note", "@taskbook")
 	// Then
@@ -32,7 +32,7 @@ func (suite *ItemUseCaseTestSuite) Test_ItemUseCase_CreateNote_CreatesNote() {
 
 func (suite *ItemUseCaseTestSuite) Test_ItemUseCase_CreateTask_CreatesTask() {
 	// Given
-	testee := NewItemUseCase(suite.Repo, suite.Seq)
+	testee := NewItemUseCase(suite.Repo, &suite.Seq)
 	// When
 	actual, err := testee.CreateTask("Learn golang", "@golang")
 	// Then
@@ -42,7 +42,7 @@ func (suite *ItemUseCaseTestSuite) Test_ItemUseCase_CreateTask_CreatesTask() {
 
 func (suite *ItemUseCaseTestSuite) Test_ItemUseCase_EditItem_UpdatesItemTitle() {
 	// Given
-	testee := NewItemUseCase(suite.Repo, suite.Seq)
+	testee := NewItemUseCase(suite.Repo, &suite.Seq)
 	task, _ := testee.CreateTask("Learn golang", "@golang")
 	// When
 	title := "Learn golang in 2 weeks"

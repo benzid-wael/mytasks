@@ -17,10 +17,10 @@ type itemUseCase struct {
 	sequence   *value_objects.Sequence
 }
 
-func NewItemUseCase(repository infrastructure.ItemRepository, sequence value_objects.Sequence) *itemUseCase {
+func NewItemUseCase(repository infrastructure.ItemRepository, sequence *value_objects.Sequence) *itemUseCase {
 	return &itemUseCase{
 		repository: repository,
-		sequence:   &sequence,
+		sequence:   sequence,
 	}
 }
 

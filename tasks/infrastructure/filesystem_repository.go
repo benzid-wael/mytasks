@@ -17,17 +17,17 @@ type FilesystemItemRepository struct {
 	ArchiveDir string `json:"archive_dir"`
 }
 
-func NewItemRepository(appDir string) *FilesystemItemRepository {
+func NewItemRepository(dataDir string) *FilesystemItemRepository {
 
-	DataDir := path.Join(appDir, "./mytasks")
-	StortageDir := path.Join(DataDir, "./repository")
-	ArchiveDir := path.Join(DataDir, "./archive")
+	dataDir = tasks.ExpandPath(dataDir)
+	StortageDir := path.Join(dataDir, "./repository")
+	ArchiveDir := path.Join(dataDir, "./archive")
 
 	tasks.CreateDirIfNotExist(StortageDir)
 	tasks.CreateDirIfNotExist(ArchiveDir)
 
 	return &FilesystemItemRepository{
-		MainAppDir: appDir,
+		MainAppDir: dataDir,
 		StorageDir: StortageDir,
 		ArchiveDir: ArchiveDir,
 	}

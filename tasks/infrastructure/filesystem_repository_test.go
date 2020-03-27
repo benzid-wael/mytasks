@@ -37,8 +37,8 @@ func Test_NewItemRepository_InitializeEmptyDirectories(t *testing.T) {
 	// When
 	NewItemRepository(dir)
 	// Then
-	assert.DirExists(t, path.Join(dir, "mytasks/repository"))
-	assert.DirExists(t, path.Join(dir, "mytasks/archive"))
+	assert.DirExists(t, path.Join(dir, "repository"))
+	assert.DirExists(t, path.Join(dir, "archive"))
 }
 
 func TestFilesystemItemRepository_GetItems_ReturnsEmptyArray_ForNonInitializedDirectory(t *testing.T) {

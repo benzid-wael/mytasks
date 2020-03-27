@@ -5,6 +5,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/user"
+	path2 "path"
+	"path/filepath"
+	"strings"
 )
 
 func CreateDirIfNotExist(dir string) {
@@ -33,4 +37,20 @@ func CreateTempDirectory(prefix string) string {
 		panic(err)
 	}
 	return dir
+}
+
+func ExpandPath(path string) string {
+	usr, _ := user.Current()
+	homeDir := usr.HomeDir
+	if path == "~" {
+		return homeDir
+	}
+	if strings.HasPrefix(path, "~") {
+		path = path2.Join(homeDir, path[2:])
+	}
+	absolutePath, err := filepath.Abs(path)
+	if err != nil {
+		log.Fatalf("Cannot expand path of: %v. Original error: %v\n", path, err.Error())
+	}
+	return absolutePath
 }
