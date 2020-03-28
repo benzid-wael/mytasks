@@ -29,8 +29,8 @@ func (error AlreadyArchivedError) Error() string {
 }
 
 type ItemRepository interface {
-	CreateTask(task entities.Task) error
-	CreateNote(note entities.Note) error
+	CreateTask(task entities.Task) (entities.Task, error)
+	CreateNote(note entities.Note) (entities.Note, error)
 
 	GetItem(id int) *entities.Manageable
 	GetItems() []entities.Manageable

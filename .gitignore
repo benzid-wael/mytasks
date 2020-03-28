@@ -19,3 +19,6 @@
 
 # testing
 coverage.txt
+
+# Mac
+.DS_Store

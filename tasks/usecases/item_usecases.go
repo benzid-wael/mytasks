@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"github.com/benzid-wael/mytasks/tasks/domain/entities"
-	"github.com/benzid-wael/mytasks/tasks/domain/value_objects"
 	"github.com/benzid-wael/mytasks/tasks/infrastructure"
 )
 
@@ -14,26 +13,24 @@ type ItemUseCase interface {
 
 type itemUseCase struct {
 	repository infrastructure.ItemRepository
-	sequence   *value_objects.Sequence
 }
 
-func NewItemUseCase(repository infrastructure.ItemRepository, sequence *value_objects.Sequence) *itemUseCase {
+func NewItemUseCase(repository infrastructure.ItemRepository) *itemUseCase {
 	return &itemUseCase{
 		repository: repository,
-		sequence:   sequence,
 	}
 }
 
 func (iuc *itemUseCase) CreateNote(title string, tags ...string) (*entities.Note, error) {
-	note := entities.NewNote(iuc.sequence, title, "", tags...)
-	err := iuc.repository.CreateNote(*note)
-	return note, err
+	item := entities.NewNote(title, "", tags...)
+	note, err := iuc.repository.CreateNote(*item)
+	return &note, err
 }
 
 func (iuc *itemUseCase) CreateTask(title string, tags ...string) (*entities.Task, error) {
-	task := entities.NewTask(iuc.sequence, title, "", tags...)
-	err := iuc.repository.CreateTask(*task)
-	return task, err
+	item := entities.NewTask(title, "", tags...)
+	task, err := iuc.repository.CreateTask(*item)
+	return &task, err
 }
 
 func (iuc *itemUseCase) EditItem(id int, title *string, description *string, tags ...string) error {

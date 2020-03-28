@@ -5,31 +5,33 @@ import (
 	"fmt"
 	"github.com/benzid-wael/mytasks/tasks"
 	"github.com/benzid-wael/mytasks/tasks/domain/entities"
+	"github.com/benzid-wael/mytasks/tasks/domain/value_objects"
 	"io/ioutil"
 	"os"
-	"path"
+	path2 "path"
 	"strconv"
 )
 
 type FilesystemItemRepository struct {
-	MainAppDir string `json:"main_app_dir"`
-	StorageDir string `json:"repository_dir"`
-	ArchiveDir string `json:"archive_dir"`
+	MainAppDir       string `json:"main_app_dir"`
+	StorageDir       string `json:"repository_dir"`
+	ArchiveDir       string `json:"archive_dir"`
+	itemSeqStatePath string
 }
 
 func NewItemRepository(dataDir string) *FilesystemItemRepository {
-
 	dataDir = tasks.ExpandPath(dataDir)
-	StortageDir := path.Join(dataDir, "./repository")
-	ArchiveDir := path.Join(dataDir, "./archive")
+	StortageDir := path2.Join(dataDir, "./repository")
+	ArchiveDir := path2.Join(dataDir, "./archive")
 
 	tasks.CreateDirIfNotExist(StortageDir)
 	tasks.CreateDirIfNotExist(ArchiveDir)
 
 	return &FilesystemItemRepository{
-		MainAppDir: dataDir,
-		StorageDir: StortageDir,
-		ArchiveDir: ArchiveDir,
+		MainAppDir:       dataDir,
+		StorageDir:       StortageDir,
+		ArchiveDir:       ArchiveDir,
+		itemSeqStatePath: path2.Join(dataDir, ".item.sequence.state"),
 	}
 }
 
@@ -38,7 +40,7 @@ func getKey(id int) string {
 }
 
 func loadItems(dir string) map[string]map[string]interface{} {
-	path := path.Join(dir, "items.json")
+	path := path2.Join(dir, "items.json")
 	items := make(map[string]map[string]interface{})
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -65,7 +67,7 @@ func storeItems(items map[string]map[string]interface{}, dir string) error {
 		fmt.Println("Cannot marshall items: ", err)
 		return err
 	} else {
-		path := path.Join(dir, "items.json")
+		path := path2.Join(dir, "items.json")
 		err := ioutil.WriteFile(path, data, 0644)
 		if err != nil {
 			fmt.Printf("Cannot store items in directory: %v, err: %v\n", path, err)
@@ -93,12 +95,26 @@ func (repository *FilesystemItemRepository) archiveItem(id string, item interfac
 	return repository.store(id, item, repository.ArchiveDir)
 }
 
-func (repository *FilesystemItemRepository) CreateTask(task entities.Task) error {
-	return repository.storeItem(getKey(task.Id), task)
+func (repository *FilesystemItemRepository) GetNextId() int {
+	sequence := value_objects.NewSequenceFromFS(repository.itemSeqStatePath)
+	if sequence == nil {
+		sequence = value_objects.NewSequence(0)
+	}
+	defer value_objects.SaveSequence(repository.itemSeqStatePath, sequence)
+	sequence.Next()
+	return sequence.Current()
 }
 
-func (repository *FilesystemItemRepository) CreateNote(note entities.Note) error {
-	return repository.storeItem(getKey(note.Id), note)
+func (repository *FilesystemItemRepository) CreateTask(task entities.Task) (entities.Task, error) {
+	task.Id = repository.GetNextId()
+	err := repository.storeItem(getKey(task.Id), task)
+	return task, err
+}
+
+func (repository *FilesystemItemRepository) CreateNote(note entities.Note) (entities.Note, error) {
+	note.Id = repository.GetNextId()
+	err := repository.storeItem(getKey(note.Id), note)
+	return note, err
 }
 
 func (repository *FilesystemItemRepository) GetItems() []entities.Manageable {

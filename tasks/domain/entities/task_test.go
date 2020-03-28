@@ -1,24 +1,20 @@
 package entities
 
 import (
-	"github.com/benzid-wael/mytasks/tasks/domain/value_objects"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestTask_NewTask_CreatesInstanceInTodoSate(t *testing.T) {
-	// Given
-	var seq value_objects.Sequence
 	// When
-	testee := NewTask(&seq, "Learn Golang", "", "@coding", "@goilang")
+	testee := NewTask("Learn Golang", "", "@coding", "@goilang")
 	// Then
 	assert.Equal(t, ToDo, testee.Status)
 }
 
 func TestTask_TriggerEvent_ChangeStatusForValidTransistions(t *testing.T) {
 	// Given
-	var seq value_objects.Sequence
-	testee := NewTask(&seq, "Learn Golang", "", "@coding", "@goilang")
+	testee := NewTask("Learn Golang", "", "@coding", "@goilang")
 	// When
 	err := testee.TriggerEvent("start")
 	// Then
@@ -28,8 +24,7 @@ func TestTask_TriggerEvent_ChangeStatusForValidTransistions(t *testing.T) {
 
 func TestTask_TriggerEvent_ReturnsErrorForInvalidTransitions(t *testing.T) {
 	// Given
-	var seq value_objects.Sequence
-	testee := NewTask(&seq, "Learn Golang", "", "@coding", "@goilang")
+	testee := NewTask("Learn Golang", "", "@coding", "@goilang")
 	// When
 	actual := testee.TriggerEvent("stop")
 	// Then
