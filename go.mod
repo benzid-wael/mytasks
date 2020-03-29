@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/Pallinder/go-randomdata v1.2.0
+	github.com/atotto/clipboard v0.1.2
 	github.com/bluele/factory-go v0.0.0-20181130035244-e6e8633dd3fe
 	github.com/davecgh/go-spew v1.1.0
 	github.com/looplab/fsm v0.1.0

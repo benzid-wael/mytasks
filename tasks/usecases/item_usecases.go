@@ -7,6 +7,7 @@ import (
 )
 
 type ItemUseCase interface {
+	GetItem(id int) entities.Manageable
 	GetItems() []entities.Manageable
 	CreateNote(title string, tags ...string) (*entities.Note, error)
 	CreateTask(title string, tags ...string) (*entities.Task, error)
@@ -49,6 +50,11 @@ func (iuc *itemUseCase) EditItem(id int, title string, description string, starr
 		newDescription = nil
 	}
 	return iuc.repository.UpdateItem(id, newTitle, newDescription, starred, tags...)
+}
+
+func (iuc *itemUseCase) GetItem(id int) entities.Manageable {
+	item := iuc.repository.GetItem(id)
+	return *item
 }
 
 func (iuc *itemUseCase) GetItems() entities.ItemCollection {

@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/atotto/clipboard"
 	"github.com/benzid-wael/mytasks/tasks"
 	"github.com/benzid-wael/mytasks/tasks/infrastructure"
 	"github.com/benzid-wael/mytasks/tasks/usecases"
@@ -232,6 +234,27 @@ func GetCliApp(config AppConfig) *cli.App {
 					return itemUseCase.DeleteItem(id)
 				}
 				return BulkFunc(ids, "Archived Items", renderer, c, deleteFunc)
+			},
+		},
+		{
+			Name:  "copy",
+			Usage: "Copy details to clipboard",
+			Flags: []cli.Flag{
+				&cli.IntSliceFlag{Name: "id", Required: true},
+				&cli.BoolFlag{Name: "title"},
+				&cli.BoolFlag{Name: "all"},
+			},
+			Action: func(c *cli.Context) error {
+				id := c.Int("id")
+				item := itemUseCase.GetItem(id)
+				value := ""
+				if c.Bool("title") {
+					value = item.GetTitle()
+				} else if c.Bool("all") {
+					bytes, _ := json.Marshal(item)
+					value = string(bytes)
+				}
+				return clipboard.WriteAll(value)
 			},
 		},
 	}

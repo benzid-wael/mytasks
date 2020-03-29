@@ -1,2 +1,2 @@
 # mytasks
-Tasks, boards &amp; notes manager
+Tasks, boards &amp; notes manager for cli fans
