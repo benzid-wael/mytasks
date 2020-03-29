@@ -48,8 +48,6 @@ func GetCliApp(config AppConfig) *cli.App {
 		Version:     "v0.0.0",
 		Description: "📓 Manage your tasks and notes from the command line",
 		Compiled:    time.Time{},
-		Author:      "Wael Ben Zid El Guebsi",
-		Email:       "benzid.wael@hotmail.fr",
 	}
 
 	itemRepository := infrastructure.NewItemRepository(config.DataDirectory)
