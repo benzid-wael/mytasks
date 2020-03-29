@@ -33,9 +33,10 @@ type ItemRepository interface {
 	CreateNote(note entities.Note) (entities.Note, error)
 
 	GetItem(id int) *entities.Manageable
-	GetItems() []entities.Manageable
+	CloneItem(id int) (entities.Manageable, error)
+	GetItems() entities.ItemCollection
 
-	UpdateItem(id int, title *string, description *string, tags ...string) error
+	UpdateItem(id int, title *string, description *string, starred *bool, tags ...string) error
 	DeleteItem(id int) error
 
 	ArchiveItem(id int) error

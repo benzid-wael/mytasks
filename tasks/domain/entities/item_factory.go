@@ -1,5 +1,9 @@
 package entities
 
+import (
+	"time"
+)
+
 type ItemFactory interface {
 	Create(data map[string]interface{}) Manageable
 }
@@ -20,13 +24,33 @@ func GetId(data map[string]interface{}) int {
 }
 
 func (factory *NoteFactory) Create(data map[string]interface{}) Manageable {
-	return NewNote(data["title"].(string), data["description"].(string), getTags(data)...)
+	note := NewNote(data["title"].(string), data["description"].(string), getTags(data)...)
+	if id := data["id"]; id != nil {
+		note.Id = GetId(data)
+	}
+	if created_at := data["created_at"].(string); created_at != "" {
+		note.CreatedAt, _ = time.Parse(time.RFC3339, created_at)
+	}
+	if starred := data["is_starred"].(bool); starred == true {
+		note.IsStarred = starred
+	}
+	return note
 }
 
 type TaskFactory struct{}
 
 func (factory *TaskFactory) Create(data map[string]interface{}) Manageable {
-	return NewTask(data["title"].(string), data["description"].(string), getTags(data)...)
+	task := NewTask(data["title"].(string), data["description"].(string), getTags(data)...)
+	if id := data["id"]; id != nil {
+		task.Id = GetId(data)
+	}
+	if created_at := data["created_at"].(string); created_at != "" {
+		task.CreatedAt, _ = time.Parse(time.RFC3339, created_at)
+	}
+	if starred := data["is_starred"].(bool); starred == true {
+		task.IsStarred = starred
+	}
+	return task
 }
 
 func CreateItem(item map[string]interface{}) Manageable {

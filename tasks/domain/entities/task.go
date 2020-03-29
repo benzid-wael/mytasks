@@ -21,6 +21,10 @@ type Task struct {
 	fsm      *fsm.FSM
 }
 
+func (task *Task) GetStatus() string {
+	return string(task.Status)
+}
+
 func NewTask(title string, description string, tags ...string) *Task {
 	task := &Task{
 		Item:   *newItem(title, "task", description, tags...),

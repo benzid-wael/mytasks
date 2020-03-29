@@ -10,10 +10,11 @@ import (
 	"os"
 	path2 "path"
 	"strconv"
+	"time"
 )
 
 type FilesystemItemRepository struct {
-	MainAppDir       string `json:"main_app_dir"`
+	DataDirectory    string `json:"data_directory"`
 	StorageDir       string `json:"repository_dir"`
 	ArchiveDir       string `json:"archive_dir"`
 	itemSeqStatePath string
@@ -28,7 +29,7 @@ func NewItemRepository(dataDir string) *FilesystemItemRepository {
 	tasks.CreateDirIfNotExist(ArchiveDir)
 
 	return &FilesystemItemRepository{
-		MainAppDir:       dataDir,
+		DataDirectory:    dataDir,
 		StorageDir:       StortageDir,
 		ArchiveDir:       ArchiveDir,
 		itemSeqStatePath: path2.Join(dataDir, ".item.sequence.state"),
@@ -117,14 +118,15 @@ func (repository *FilesystemItemRepository) CreateNote(note entities.Note) (enti
 	return note, err
 }
 
-func (repository *FilesystemItemRepository) GetItems() []entities.Manageable {
+func (repository *FilesystemItemRepository) GetItems() entities.ItemCollection {
 	items := loadItems(repository.StorageDir)
-	result := make([]entities.Manageable, len(items))
+	result := make(entities.ItemCollection, len(items))
 
+	index := 0
 	for _, item := range items {
-		index := entities.GetId(item) - 1
 		if item != nil {
 			result[index] = entities.CreateItem(item)
+			index++
 		}
 	}
 
@@ -149,7 +151,26 @@ func (repository *FilesystemItemRepository) GetItem(id int) *entities.Manageable
 	return &item
 }
 
-func (repository *FilesystemItemRepository) UpdateItem(id int, title *string, description *string, tags ...string) error {
+func (repository *FilesystemItemRepository) CloneItem(id int) (entities.Manageable, error) {
+	items := loadItems(repository.StorageDir)
+	data, err := repository.getItem(items, id)
+	if err != nil {
+		return nil, err
+	}
+
+	data["created_at"] = time.Now().Format(time.RFC3339)
+	newId := repository.GetNextId()
+	data["id"] = float64(newId)
+	err = repository.storeItem(getKey(newId), data)
+	if err != nil {
+		return nil, err
+	}
+
+	item := entities.CreateItem(data)
+	return item, nil
+}
+
+func (repository *FilesystemItemRepository) UpdateItem(id int, title *string, description *string, starred *bool, tags ...string) error {
 	items := loadItems(repository.StorageDir)
 
 	if item, err := repository.getItem(items, id); err == nil {
@@ -161,6 +182,9 @@ func (repository *FilesystemItemRepository) UpdateItem(id int, title *string, de
 		}
 		if len(tags) > 0 {
 			item["tags"] = tags
+		}
+		if starred != nil {
+			item["is_starred"] = starred
 		}
 
 		// Update collection
@@ -191,7 +215,7 @@ func (repository *FilesystemItemRepository) ArchiveItem(id int) error {
 	if err != nil {
 		return err
 	}
-	archivedItems := loadItems(repository.StorageDir)
+	archivedItems := loadItems(repository.ArchiveDir)
 	_, err2 := repository.getItem(archivedItems, id)
 	key := getKey(id)
 	if err2 == nil {
