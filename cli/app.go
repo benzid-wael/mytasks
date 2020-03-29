@@ -262,21 +262,62 @@ func GetCliApp(config AppConfig) *cli.App {
 			},
 		},
 		{
-			Name:  "update-status",
-			Usage: "Update task task",
+			Name:  "start",
+			Usage: "Start task",
 			Flags: []cli.Flag{
 				&cli.IntSliceFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
 				id := c.Int("id")
-				args := c.Args()
-				if len(args) > 1 {
-					renderer.Error("Too many arguments.")
-				} else if len(args) == 0 {
-					renderer.Error("No status were given as input.")
+				err := itemUseCase.TriggerEvent(id, "start")
+				if err != nil {
+					renderer.Error(err.Error())
+					return err
 				}
-
-				err := itemUseCase.TriggerEvent(id, c.Args()[0])
+				return nil
+			},
+		},
+		{
+			Name:  "stop",
+			Usage: "Stop task",
+			Flags: []cli.Flag{
+				&cli.IntSliceFlag{Name: "id", Required: true},
+			},
+			Action: func(c *cli.Context) error {
+				id := c.Int("id")
+				err := itemUseCase.TriggerEvent(id, "stop")
+				if err != nil {
+					renderer.Error(err.Error())
+					return err
+				}
+				return nil
+			},
+		},
+		{
+			Name:  "complete",
+			Usage: "Complete task",
+			Flags: []cli.Flag{
+				&cli.IntSliceFlag{Name: "id", Required: true},
+			},
+			Action: func(c *cli.Context) error {
+				id := c.Int("id")
+				err := itemUseCase.TriggerEvent(id, "complete")
+				if err != nil {
+					renderer.Error(err.Error())
+					return err
+				}
+				return nil
+			},
+		},
+		{
+			Name:  "cancel",
+			Usage: "Cancel task",
+			Flags: []cli.Flag{
+				&cli.IntSliceFlag{Name: "id", Required: true},
+			},
+			Action: func(c *cli.Context) error {
+				id := c.Int("id")
+				err := itemUseCase.TriggerEvent(id, "cancel")
 				if err != nil {
 					renderer.Error(err.Error())
 					return err
