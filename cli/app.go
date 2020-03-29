@@ -45,7 +45,7 @@ func GetCliApp(config AppConfig) *cli.App {
 
 	app := cli.App{
 		Name:        "mytasks",
-		Version:     "v0.0.0",
+		Version:     "v0.0.1",
 		Description: "📓 Manage your tasks and notes from the command line",
 		Compiled:    time.Time{},
 	}
