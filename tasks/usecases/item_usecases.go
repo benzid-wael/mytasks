@@ -7,15 +7,18 @@ import (
 )
 
 type ItemUseCase interface {
-	GetItem(id int) entities.Manageable
-	GetItems() []entities.Manageable
 	CreateNote(title string, tags ...string) (*entities.Note, error)
 	CreateTask(title string, tags ...string) (*entities.Task, error)
+	GetItems() []entities.Manageable
+	GetItem(id int) entities.Manageable
+	GetNoteById(id int) (*entities.Note, error)
+	GetTaskById(id int) (*entities.Task, error)
 	EditItem(id int, title *string, description *string, tags ...string) error
 	CopyItem(id int) (*entities.Note, error)
 	ArchiveItem(id int) error
 	RestoreItem(id int) error
 	DeleteItem(id int) error
+	TriggerEvent(id int) error
 }
 
 type itemUseCase struct {
@@ -35,7 +38,7 @@ func (iuc *itemUseCase) CreateNote(title string, tags ...string) (*entities.Note
 }
 
 func (iuc *itemUseCase) CreateTask(title string, tags ...string) (*entities.Task, error) {
-	item := entities.NewTask(title, "", tags...)
+	item := entities.NewTask(title, "", entities.ToDo, tags...)
 	task, err := iuc.repository.CreateTask(*item)
 	return &task, err
 }
@@ -54,13 +57,21 @@ func (iuc *itemUseCase) EditItem(id int, title string, description string, starr
 
 func (iuc *itemUseCase) GetItem(id int) entities.Manageable {
 	item := iuc.repository.GetItem(id)
-	return *item
+	return item
 }
 
 func (iuc *itemUseCase) GetItems() entities.ItemCollection {
 	items := iuc.repository.GetItems()
 	sort.Sort(items)
 	return items
+}
+
+func (iuc *itemUseCase) GetNoteById(id int) (*entities.Note, error) {
+	return iuc.repository.GetNoteById(id)
+}
+
+func (iuc *itemUseCase) GetTaskById(id int) (*entities.Task, error) {
+	return iuc.repository.GetTaskById(id)
 }
 
 func (iuc *itemUseCase) CloneItem(id int) (entities.Manageable, error) {
@@ -78,4 +89,18 @@ func (iuc *itemUseCase) RestoreItem(id int) error {
 
 func (iuc *itemUseCase) DeleteItem(id int) error {
 	return iuc.repository.ArchiveItem(id)
+}
+
+func (iuc *itemUseCase) TriggerEvent(id int, event string) error {
+	item, err := iuc.GetTaskById(id)
+	if err != nil {
+		return err
+	}
+
+	err = item.TriggerEvent(event)
+	if err != nil {
+		return err
+	}
+
+	return iuc.repository.StoreItem(id, item)
 }

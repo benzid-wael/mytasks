@@ -2,13 +2,13 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/atotto/clipboard"
 	"github.com/benzid-wael/mytasks/tasks"
 	"github.com/benzid-wael/mytasks/tasks/infrastructure"
 	"github.com/benzid-wael/mytasks/tasks/usecases"
 	"github.com/urfave/cli"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -138,7 +138,7 @@ func GetCliApp(config AppConfig) *cli.App {
 			Aliases: []string{"e"},
 			Flags: []cli.Flag{
 				&cli.IntFlag{Name: "id", Required: true},
-				&cli.StringFlag{Name: "title", Required: true},
+				&cli.StringFlag{Name: "title"},
 				&cli.StringFlag{Name: "description"},
 				&cli.StringSliceFlag{Name: "tags"},
 			},
@@ -147,6 +147,11 @@ func GetCliApp(config AppConfig) *cli.App {
 				title := c.String("title")
 				description := c.String("description")
 				tags := c.StringSlice("tags")
+				if title == "" && description == "" && len(tags) < 1 {
+					errorMsg := "You should modify at least one attribute."
+					renderer.Error(errorMsg)
+					return errors.New(errorMsg)
+				}
 				err := itemUseCase.EditItem(id, title, description, nil, tags...)
 				if err == nil {
 					renderer.Success("Updated Item: " + renderer.Colorify(id, GREY))
@@ -242,7 +247,6 @@ func GetCliApp(config AppConfig) *cli.App {
 			Flags: []cli.Flag{
 				&cli.IntSliceFlag{Name: "id", Required: true},
 				&cli.BoolFlag{Name: "title"},
-				&cli.BoolFlag{Name: "all"},
 			},
 			Action: func(c *cli.Context) error {
 				id := c.Int("id")
@@ -250,11 +254,34 @@ func GetCliApp(config AppConfig) *cli.App {
 				value := ""
 				if c.Bool("title") {
 					value = item.GetTitle()
-				} else if c.Bool("all") {
+				} else {
 					bytes, _ := json.Marshal(item)
 					value = string(bytes)
 				}
 				return clipboard.WriteAll(value)
+			},
+		},
+		{
+			Name:  "update-status",
+			Usage: "Update task task",
+			Flags: []cli.Flag{
+				&cli.IntSliceFlag{Name: "id", Required: true},
+			},
+			Action: func(c *cli.Context) error {
+				id := c.Int("id")
+				args := c.Args()
+				if len(args) > 1 {
+					renderer.Error("Too many arguments.")
+				} else if len(args) == 0 {
+					renderer.Error("No status were given as input.")
+				}
+
+				err := itemUseCase.TriggerEvent(id, c.Args()[0])
+				if err != nil {
+					renderer.Error(err.Error())
+					return err
+				}
+				return nil
 			},
 		},
 	}
@@ -268,9 +295,5 @@ func Main() {
 	appConfig := GetAppConfig(appConfigPath, dataDir)
 	app := GetCliApp(appConfig)
 
-	err := app.Run(os.Args)
-
-	if err != nil {
-		log.Fatalf("Cannot run command: %v. Original error: %v", os.Args, err)
-	}
+	app.Run(os.Args)
 }

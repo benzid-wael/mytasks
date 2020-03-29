@@ -17,7 +17,7 @@ const (
 type Task struct {
 	Item
 	Status   TaskStatus `json:"status"`
-	Priority int8       `json:"priority"`
+	Priority uint       `json:"priority"`
 	fsm      *fsm.FSM
 }
 
@@ -25,14 +25,15 @@ func (task *Task) GetStatus() string {
 	return string(task.Status)
 }
 
-func NewTask(title string, description string, tags ...string) *Task {
+func NewTask(title string, description string, status TaskStatus, tags ...string) *Task {
 	task := &Task{
-		Item:   *newItem(title, "task", description, tags...),
-		Status: ToDo,
+		Item:     *newItem(title, "task", description, tags...),
+		Status:   status,
+		Priority: 0,
 	}
 
 	task.fsm = fsm.NewFSM(
-		string(ToDo),
+		string(status),
 		fsm.Events{
 			{Name: "start", Src: []string{string(ToDo), string(Stopped), string(Cancelled)}, Dst: string(InProgress)},
 			{Name: "stop", Src: []string{string(InProgress)}, Dst: string(ToDo)},
@@ -47,5 +48,9 @@ func NewTask(title string, description string, tags ...string) *Task {
 }
 
 func (task *Task) TriggerEvent(event string, args ...interface{}) error {
-	return task.fsm.Event(event, args...)
+	err := task.fsm.Event(event, args...)
+	if err != nil {
+		task.Status = TaskStatus(task.fsm.Current())
+	}
+	return err
 }

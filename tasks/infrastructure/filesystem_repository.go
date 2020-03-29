@@ -88,8 +88,9 @@ func (repository *FilesystemItemRepository) store(id string, item interface{}, d
 	return storeItems(items, dir)
 }
 
-func (repository *FilesystemItemRepository) storeItem(id string, item interface{}) error {
-	return repository.store(id, item, repository.StorageDir)
+func (repository *FilesystemItemRepository) StoreItem(id int, item interface{}) error {
+	key := getKey(id)
+	return repository.store(key, item, repository.StorageDir)
 }
 
 func (repository *FilesystemItemRepository) archiveItem(id string, item interface{}) error {
@@ -108,13 +109,13 @@ func (repository *FilesystemItemRepository) GetNextId() int {
 
 func (repository *FilesystemItemRepository) CreateTask(task entities.Task) (entities.Task, error) {
 	task.Id = repository.GetNextId()
-	err := repository.storeItem(getKey(task.Id), task)
+	err := repository.StoreItem(task.Id, task)
 	return task, err
 }
 
 func (repository *FilesystemItemRepository) CreateNote(note entities.Note) (entities.Note, error) {
 	note.Id = repository.GetNextId()
-	err := repository.storeItem(getKey(note.Id), note)
+	err := repository.StoreItem(note.Id, note)
 	return note, err
 }
 
@@ -141,14 +142,14 @@ func (repository *FilesystemItemRepository) getItem(items map[string]map[string]
 	return nil, DoesNotExistError{"Cannot find any item with ID: " + key}
 }
 
-func (repository *FilesystemItemRepository) GetItem(id int) *entities.Manageable {
+func (repository *FilesystemItemRepository) GetItem(id int) entities.Manageable {
 	items := loadItems(repository.StorageDir)
 	data, err := repository.getItem(items, id)
 	if err != nil {
 		panic(err)
 	}
 	item := entities.CreateItem(data)
-	return &item
+	return item
 }
 
 func (repository *FilesystemItemRepository) CloneItem(id int) (entities.Manageable, error) {
@@ -161,7 +162,7 @@ func (repository *FilesystemItemRepository) CloneItem(id int) (entities.Manageab
 	data["created_at"] = time.Now().Format(time.RFC3339)
 	newId := repository.GetNextId()
 	data["id"] = float64(newId)
-	err = repository.storeItem(getKey(newId), data)
+	err = repository.StoreItem(newId, data)
 	if err != nil {
 		return nil, err
 	}
@@ -247,5 +248,23 @@ func (repository *FilesystemItemRepository) RestoreItem(id int) error {
 		return ItemRepositoryError{"Cannot store items in the archive directory. Original error: " + err3.Error()}
 	}
 
-	return repository.storeItem(key, item)
+	return repository.StoreItem(id, item)
+}
+
+func (repository *FilesystemItemRepository) GetTaskById(id int) (*entities.Task, error) {
+	item := repository.GetItem(id)
+	if item.GetType() != "task" {
+		return nil, DoesNotExistError{message: "Cannot find any note with ID: " + strconv.Itoa(id)}
+	}
+	task := interface{}(item).(*entities.Task)
+	return task, nil
+}
+
+func (repository *FilesystemItemRepository) GetNoteById(id int) (*entities.Note, error) {
+	item := repository.GetItem(id)
+	if item.GetType() != "note" {
+		return nil, DoesNotExistError{message: "Cannot find any note with ID: " + strconv.Itoa(id)}
+	}
+	note := interface{}(item).(*entities.Note)
+	return note, nil
 }

@@ -40,7 +40,8 @@ func (factory *NoteFactory) Create(data map[string]interface{}) Manageable {
 type TaskFactory struct{}
 
 func (factory *TaskFactory) Create(data map[string]interface{}) Manageable {
-	task := NewTask(data["title"].(string), data["description"].(string), getTags(data)...)
+	status := TaskStatus(data["status"].(string))
+	task := NewTask(data["title"].(string), data["description"].(string), status, getTags(data)...)
 	if id := data["id"]; id != nil {
 		task.Id = GetId(data)
 	}
@@ -49,6 +50,9 @@ func (factory *TaskFactory) Create(data map[string]interface{}) Manageable {
 	}
 	if starred := data["is_starred"].(bool); starred == true {
 		task.IsStarred = starred
+	}
+	if priority := uint(data["priority"].(float64)); priority > 0 {
+		task.Priority = priority
 	}
 	return task
 }

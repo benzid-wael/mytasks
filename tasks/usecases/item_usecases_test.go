@@ -47,7 +47,7 @@ func (suite *ItemUseCaseTestSuite) Test_ItemUseCase_EditItem_UpdatesItemTitle() 
 	// Then
 	suite.Nil(err)
 	item := suite.Repo.GetItem(task.Id)
-	suite.Equal((*item).GetTitle(), title)
+	suite.Equal((item).GetTitle(), title)
 }
 
 //// In order for 'go test' to run this suite, we need to create

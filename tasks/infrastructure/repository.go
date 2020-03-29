@@ -29,12 +29,15 @@ func (error AlreadyArchivedError) Error() string {
 }
 
 type ItemRepository interface {
+	StoreItem(id int, item interface{}) error
 	CreateTask(task entities.Task) (entities.Task, error)
 	CreateNote(note entities.Note) (entities.Note, error)
 
-	GetItem(id int) *entities.Manageable
-	CloneItem(id int) (entities.Manageable, error)
 	GetItems() entities.ItemCollection
+	GetItem(id int) entities.Manageable
+	CloneItem(id int) (entities.Manageable, error)
+	GetTaskById(id int) (*entities.Task, error)
+	GetNoteById(id int) (*entities.Note, error)
 
 	UpdateItem(id int, title *string, description *string, starred *bool, tags ...string) error
 	DeleteItem(id int) error
