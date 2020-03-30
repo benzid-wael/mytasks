@@ -17,7 +17,7 @@
  - Tasks due date & custom notification
  - Custom template
 
- ## Installation
+## Installation
 
  You can install the package using go tool
 
