@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/benzid-wael/mytasks/tasks/domain/entities"
+	"log"
 )
 
 type ItemGroup struct {
@@ -63,7 +64,10 @@ func FlatByTags(items entities.ItemCollection) entities.ItemCollection {
 			for _, tag := range tags {
 				var payload map[string]interface{}
 				data, _ := json.Marshal(item)
-				json.Unmarshal(data, &payload)
+				err := json.Unmarshal(data, &payload)
+				if err != nil {
+					log.Fatal("Cannot unmarshal item with ID: ", item.GetId())
+				}
 				payload["tags"] = []interface{}{interface{}(tag)}
 				newItems[index] = entities.CreateItem(payload)
 				index++

@@ -102,7 +102,7 @@ func (repository *FilesystemItemRepository) GetNextId() int {
 	if sequence == nil {
 		sequence = value_objects.NewSequence(0)
 	}
-	defer value_objects.SaveSequence(repository.itemSeqStatePath, sequence)
+	defer value_objects.SaveSequence(repository.itemSeqStatePath, sequence) // nolint
 	sequence.Next()
 	return sequence.Current()
 }

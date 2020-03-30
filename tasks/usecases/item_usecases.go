@@ -9,23 +9,23 @@ import (
 type ItemUseCase interface {
 	CreateNote(title string, tags ...string) (*entities.Note, error)
 	CreateTask(title string, tags ...string) (*entities.Task, error)
-	GetItems() []entities.Manageable
+	GetItems() entities.ItemCollection
 	GetItem(id int) entities.Manageable
 	GetNoteById(id int) (*entities.Note, error)
 	GetTaskById(id int) (*entities.Task, error)
-	EditItem(id int, title *string, description *string, tags ...string) error
-	CopyItem(id int) (*entities.Note, error)
+	EditItem(id int, title string, description string, starred *bool, tags ...string) error
+	CloneItem(id int) (entities.Manageable, error)
 	ArchiveItem(id int) error
 	RestoreItem(id int) error
 	DeleteItem(id int) error
-	TriggerEvent(id int) error
+	TriggerEvent(id int, event string) error
 }
 
 type itemUseCase struct {
 	repository infrastructure.ItemRepository
 }
 
-func NewItemUseCase(repository infrastructure.ItemRepository) *itemUseCase {
+func NewItemUseCase(repository infrastructure.ItemRepository) ItemUseCase {
 	return &itemUseCase{
 		repository: repository,
 	}

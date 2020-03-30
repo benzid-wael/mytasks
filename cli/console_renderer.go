@@ -24,5 +24,5 @@ func (Logger *ConsoleRenderer) Success(message string) error {
 }
 
 func (Logger *ConsoleRenderer) Colorify(message interface{}, color COLOR) string {
-	return fmt.Sprintf("%v%v%v", color, message, NC)
+	return fmt.Sprintf("%v%v%v", color, message, RESET)
 }

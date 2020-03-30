@@ -2,15 +2,15 @@ package main
 
 import (
 	"github.com/benzid-wael/mytasks/cli"
-	"github.com/benzid-wael/mytasks/tasks"
+	"log"
 	"os"
 )
 
 func main() {
-	dataDir := "~/.mytasks"
-	appConfigPath := tasks.ExpandPath("~/.mytasks.json")
-	appConfig := cli.GetAppConfig(appConfigPath, dataDir)
-	app := cli.GetCliApp(appConfig)
+	app := cli.GetCliApp()
 
-	app.Run(os.Args)
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal("error: ", err)
+	}
 }

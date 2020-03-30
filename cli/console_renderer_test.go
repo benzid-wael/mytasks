@@ -2,6 +2,7 @@ package cli
 
 import (
 	"gotest.tools/assert"
+	"log"
 	"testing"
 )
 
@@ -42,7 +43,10 @@ func TestConsoleRenderer_Log_PrintsMessageIntoStdout(t *testing.T) {
 	testee := ConsoleRenderer{}
 	// When
 	actual := CaptureOutput(func() {
-		testee.Log(LoggerOptions{Badge: "X", Color: RED}, "Hello")
+		err := testee.Log(LoggerOptions{Badge: "X", Color: RED}, "Hello")
+		if err != nil {
+			log.Fatal("Cannot capture log")
+		}
 	})
 	// Then
 	assert.Equal(t, "\033[0;31mX\033[0m  Hello\n", actual)

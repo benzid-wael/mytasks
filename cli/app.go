@@ -9,7 +9,7 @@ import (
 	"github.com/benzid-wael/mytasks/tasks/infrastructure"
 	"github.com/benzid-wael/mytasks/tasks/usecases"
 	"github.com/urfave/cli"
-	"os"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -20,38 +20,56 @@ type MapFunction func(id int, c *cli.Context) error
 func BulkFunc(ids []int, successMsgPrefix string, renderer Renderer, c *cli.Context, mapperFunc MapFunction) error {
 	succeed := make([]string, 0, len(ids))
 	failed := make([]string, 0, len(ids))
+
 	for _, id := range ids {
 		err := mapperFunc(id, c)
 		if err != nil {
 			fmt.Printf("Cannot process item: %v, error: %v\n", id, err)
-			failed = append(failed, strconv.Itoa(id))
+			failed = append(failed, strconv.Itoa(id)) // nolint
 		} else {
-			succeed = append(succeed, strconv.Itoa(id))
+			succeed = append(succeed, strconv.Itoa(id)) // nolint
 		}
+		return err // nolint
 	}
 
 	fmt.Println()
 	if len(succeed) > 0 {
-		renderer.Success(successMsgPrefix + ": " + renderer.Colorify(strings.Join(succeed, ", "), GREY))
+		return renderer.Success(successMsgPrefix + ": " + renderer.Colorify(strings.Join(succeed, ", "), GREY))
 	}
 	if len(failed) > 0 {
-		renderer.Error("Failed Items: " + renderer.Colorify(strings.Join(failed, ", "), GREY))
+		return renderer.Error("Failed Items: " + renderer.Colorify(strings.Join(failed, ", "), GREY))
 	}
-
 	return nil
 }
 
-func GetCliApp(config AppConfig) *cli.App {
+func getItemUseCase(workspace string, config AppConfig) usecases.ItemUseCase {
+	dataDir := config.DataDirectory
+	if workspace != "" {
+		dataDir = path.Join(dataDir, workspace)
+	}
+	itemRepository := infrastructure.NewItemRepository(dataDir)
+	return usecases.NewItemUseCase(itemRepository)
+}
+
+func GetCliApp() *cli.App {
+	dataDir := "~/.mytasks"
+	appConfigPath := tasks.ExpandPath("~/.mytasks.json")
+	config := GetAppConfig(appConfigPath, dataDir)
 
 	app := cli.App{
 		Name:        "mytasks",
 		Version:     "v0.0.1",
 		Description: "📓 Manage your tasks and notes from the command line",
 		Compiled:    time.Time{},
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "workspace",
+				Usage: "Workspace name",
+				Value: config.DefaultWorkplace,
+			},
+		},
 	}
 
-	itemRepository := infrastructure.NewItemRepository(config.DataDirectory)
-	itemUseCase := usecases.NewItemUseCase(itemRepository)
 	renderer := NewRenderer()
 	itemPresenter := NewItemPresenter(renderer)
 
@@ -60,6 +78,7 @@ func GetCliApp(config AppConfig) *cli.App {
 			Name:  "timeline",
 			Usage: "Display Timeline View",
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				items := itemUseCase.GetItems()
 				return itemPresenter.TimelineView(items)
 			},
@@ -68,6 +87,7 @@ func GetCliApp(config AppConfig) *cli.App {
 			Name:  "board",
 			Usage: "Display Board View",
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				items := itemUseCase.GetItems()
 				return itemPresenter.BoardView(items)
 			},
@@ -81,13 +101,14 @@ func GetCliApp(config AppConfig) *cli.App {
 				&cli.StringSliceFlag{Name: "tags"},
 			},
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				tags := c.StringSlice("tags")
 				title := c.String("title")
 				note, err := itemUseCase.CreateNote(title, tags...)
 				if err == nil {
-					renderer.Success("Created note: " + renderer.Colorify(note.Id, GREY))
+					renderer.Success("Created note: " + renderer.Colorify(note.Id, GREY)) // nolint
 				} else {
-					renderer.Error("Cannot create new note: " + err.Error())
+					renderer.Error("Cannot create new note: " + err.Error()) // nolint
 				}
 				return err
 			},
@@ -101,13 +122,14 @@ func GetCliApp(config AppConfig) *cli.App {
 				&cli.StringSliceFlag{Name: "tags"},
 			},
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				tags := c.StringSlice("tags")
 				title := c.String("title")
 				note, err := itemUseCase.CreateTask(title, tags...)
 				if err == nil {
-					renderer.Success("Created task: " + renderer.Colorify(note.Id, GREY))
+					renderer.Success("Created task: " + renderer.Colorify(note.Id, GREY)) // nolint
 				} else {
-					renderer.Error("Cannot create new task: " + err.Error())
+					renderer.Error("Cannot create new task: " + err.Error()) // nolint
 				}
 				return err
 			},
@@ -119,12 +141,13 @@ func GetCliApp(config AppConfig) *cli.App {
 				&cli.IntFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				id := c.Int("id")
 				item, err := itemUseCase.CloneItem(id)
 				if err == nil {
-					renderer.Success("Cloned item: " + renderer.Colorify(item.GetId(), GREY))
+					renderer.Success("Cloned item: " + renderer.Colorify(item.GetId(), GREY)) // nolint
 				} else {
-					renderer.Error("Cannot clone item: " + err.Error())
+					renderer.Error("Cannot clone item: " + err.Error()) // nolint
 				}
 				return err
 			},
@@ -140,20 +163,21 @@ func GetCliApp(config AppConfig) *cli.App {
 				&cli.StringSliceFlag{Name: "tags"},
 			},
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				id := c.Int("id")
 				title := c.String("title")
 				description := c.String("description")
 				tags := c.StringSlice("tags")
 				if title == "" && description == "" && len(tags) < 1 {
 					errorMsg := "You should modify at least one attribute."
-					renderer.Error(errorMsg)
+					renderer.Error(errorMsg) // nolint
 					return errors.New(errorMsg)
 				}
 				err := itemUseCase.EditItem(id, title, description, nil, tags...)
 				if err == nil {
-					renderer.Success("Updated Item: " + renderer.Colorify(id, GREY))
+					renderer.Success("Updated Item: " + renderer.Colorify(id, GREY)) // nolint
 				} else {
-					renderer.Error("Cannot update item: " + err.Error())
+					renderer.Error("Cannot update item: " + err.Error()) // nolint
 				}
 				return err
 			},
@@ -165,6 +189,7 @@ func GetCliApp(config AppConfig) *cli.App {
 				&cli.IntSliceFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				ids := c.IntSlice("id")
 
 				starFunc := func(id int, c *cli.Context) error {
@@ -181,6 +206,7 @@ func GetCliApp(config AppConfig) *cli.App {
 				&cli.IntSliceFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				ids := c.IntSlice("id")
 
 				unstarFunc := func(id int, c *cli.Context) error {
@@ -198,6 +224,7 @@ func GetCliApp(config AppConfig) *cli.App {
 				&cli.IntSliceFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				ids := c.IntSlice("id")
 
 				archiveFunc := func(id int, c *cli.Context) error {
@@ -214,6 +241,7 @@ func GetCliApp(config AppConfig) *cli.App {
 				&cli.IntSliceFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				ids := c.IntSlice("id")
 
 				restoreFunc := func(id int, c *cli.Context) error {
@@ -230,6 +258,7 @@ func GetCliApp(config AppConfig) *cli.App {
 				&cli.IntSliceFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				ids := c.IntSlice("id")
 
 				deleteFunc := func(id int, c *cli.Context) error {
@@ -246,6 +275,7 @@ func GetCliApp(config AppConfig) *cli.App {
 				&cli.BoolFlag{Name: "title"},
 			},
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				id := c.Int("id")
 				item := itemUseCase.GetItem(id)
 				value := ""
@@ -265,13 +295,13 @@ func GetCliApp(config AppConfig) *cli.App {
 				&cli.IntSliceFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				id := c.Int("id")
 				err := itemUseCase.TriggerEvent(id, "start")
 				if err != nil {
-					renderer.Error(err.Error())
-					return err
+					renderer.Error(err.Error()) // nolint
 				}
-				return nil
+				return err
 			},
 		},
 		{
@@ -281,10 +311,11 @@ func GetCliApp(config AppConfig) *cli.App {
 				&cli.IntSliceFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				id := c.Int("id")
 				err := itemUseCase.TriggerEvent(id, "stop")
 				if err != nil {
-					renderer.Error(err.Error())
+					renderer.Error(err.Error()) // nolint
 					return err
 				}
 				return nil
@@ -297,10 +328,11 @@ func GetCliApp(config AppConfig) *cli.App {
 				&cli.IntSliceFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				id := c.Int("id")
 				err := itemUseCase.TriggerEvent(id, "complete")
 				if err != nil {
-					renderer.Error(err.Error())
+					renderer.Error(err.Error()) // nolint
 					return err
 				}
 				return nil
@@ -313,10 +345,11 @@ func GetCliApp(config AppConfig) *cli.App {
 				&cli.IntSliceFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
+				itemUseCase := getItemUseCase(c.GlobalString("workspace"), config)
 				id := c.Int("id")
 				err := itemUseCase.TriggerEvent(id, "cancel")
 				if err != nil {
-					renderer.Error(err.Error())
+					renderer.Error(err.Error()) // nolint
 					return err
 				}
 				return nil
@@ -325,13 +358,4 @@ func GetCliApp(config AppConfig) *cli.App {
 	}
 
 	return &app
-}
-
-func Main() {
-	dataDir := "~/.mytasks"
-	appConfigPath := tasks.ExpandPath("~/.mytasks.json")
-	appConfig := GetAppConfig(appConfigPath, dataDir)
-	app := GetCliApp(appConfig)
-
-	app.Run(os.Args)
 }

@@ -31,7 +31,7 @@ func (factory *NoteFactory) Create(data map[string]interface{}) Manageable {
 	if created_at := data["created_at"].(string); created_at != "" {
 		note.CreatedAt, _ = time.Parse(time.RFC3339, created_at)
 	}
-	if starred := data["is_starred"].(bool); starred == true {
+	if starred := data["is_starred"].(bool); starred {
 		note.IsStarred = starred
 	}
 	return note
@@ -48,7 +48,7 @@ func (factory *TaskFactory) Create(data map[string]interface{}) Manageable {
 	if created_at := data["created_at"].(string); created_at != "" {
 		task.CreatedAt, _ = time.Parse(time.RFC3339, created_at)
 	}
-	if starred := data["is_starred"].(bool); starred == true {
+	if starred := data["is_starred"].(bool); starred {
 		task.IsStarred = starred
 	}
 	if priority := uint(data["priority"].(float64)); priority > 0 {

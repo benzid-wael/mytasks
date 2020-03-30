@@ -12,6 +12,7 @@ type AppConfig struct {
 	DataDirectory         string `json:"data_directory"`
 	DisplayCompletedTasks bool   `json:"display_completed_tasks"`
 	DefaultDisplayMode    string `json:"default_display_mode"`
+	DefaultWorkplace      string `json:"default_workplace"`
 }
 
 func GetAppConfig(path string, defaultDataDir string) AppConfig {
@@ -19,9 +20,10 @@ func GetAppConfig(path string, defaultDataDir string) AppConfig {
 		DataDirectory:         defaultDataDir,
 		DisplayCompletedTasks: false,
 		DefaultDisplayMode:    "board",
+		DefaultWorkplace:      "",
 	}
 	path = tasks.ExpandPath(path)
-	defer storeAppConfig(path, &appConfig)
+	defer storeAppConfig(path, &appConfig) // nolint
 
 	data, err := ioutil.ReadFile(path)
 	if err != nil {

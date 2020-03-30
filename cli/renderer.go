@@ -3,18 +3,18 @@ package cli
 type COLOR string
 
 const (
+	RESET string = "\033[0m"
 	// 3-4 bits color
-	NC      string = "\033[0m"
-	BLACK          = "\033[0;30m"
-	RED            = "\033[0;31m"
-	GREEN          = "\033[0;32m"
-	YELLOW         = "\033[0;33m"
-	BLUE           = "\033[0;34m"
-	MAGENTA        = "\033[0;35m"
-	CYAN           = "\033[0;36m"
-	WHITE          = "\033[0;37m"
+	BLACK   COLOR = "\033[0;30m"
+	RED     COLOR = "\033[0;31m"
+	GREEN   COLOR = "\033[0;32m"
+	YELLOW  COLOR = "\033[0;33m"
+	BLUE    COLOR = "\033[0;34m"
+	MAGENTA COLOR = "\033[0;35m"
+	CYAN    COLOR = "\033[0;36m"
+	WHITE   COLOR = "\033[0;37m"
 	// RGB colors
-	GREY = "\033[0;38;2;128;128;128m"
+	GREY COLOR = "\033[0;38;2;128;128;128m"
 )
 
 type Renderer interface {

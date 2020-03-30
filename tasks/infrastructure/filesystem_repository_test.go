@@ -57,7 +57,7 @@ func TestFilesystemItemRepository_GetItems_ReturnsArrayOfItems(t *testing.T) {
 	testee := NewItemRepository(dir)
 	item := entities.GenerateDummyRawItem()
 	key := strconv.Itoa(entities.GetId(item))
-	testee.store(key, item, testee.StorageDir)
+	testee.store(key, item, testee.StorageDir) // nolint
 	// When
 	actual := testee.GetItems()
 	// Then
@@ -128,7 +128,7 @@ func Test_FilesystemItemRepository_UpdateItem_UpdatesItem_WhenItemExist(t *testi
 	dir := tasks.CreateTempDirectory("UpdateItem")
 	testee := NewItemRepository(dir)
 	item := entities.GenerateDummyRawItem()
-	testee.store("1", item, testee.StorageDir)
+	testee.store("1", item, testee.StorageDir) // nolint
 	title := "My note"
 	item["title"] = title
 	expected := item
