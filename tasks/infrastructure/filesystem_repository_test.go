@@ -118,7 +118,7 @@ func Test_FilesystemItemRepository_UpdateItem_ThrowsDoesNotExistError_WhenItemDo
 	dir := tasks.CreateTempDirectory("UpdateItem")
 	testee := NewItemRepository(dir)
 	// When
-	err := testee.UpdateItem(2, nil, nil, nil)
+	err := testee.UpdateItem(2, nil)
 	// Then
 	assert.Error(t, err)
 }
@@ -130,10 +130,13 @@ func Test_FilesystemItemRepository_UpdateItem_UpdatesItem_WhenItemExist(t *testi
 	item := entities.GenerateDummyRawItem()
 	testee.store("1", item, testee.StorageDir) // nolint
 	title := "My note"
+	data := map[string]interface{}{
+		"title": title,
+	}
 	item["title"] = title
 	expected := item
 	// When
-	err := testee.UpdateItem(1, &title, nil, nil)
+	err := testee.UpdateItem(1, data)
 	// Then
 	assert.Nil(t, err)
 	assertItemInDir(t, "1", expected, testee.StorageDir)

@@ -39,7 +39,7 @@ type ItemRepository interface {
 	GetTaskById(id int) (*entities.Task, error)
 	GetNoteById(id int) (*entities.Note, error)
 
-	UpdateItem(id int, title *string, description *string, starred *bool, tags ...string) error
+	UpdateItem(id int, data map[string]interface{}) error
 	DeleteItem(id int) error
 
 	ArchiveItem(id int) error

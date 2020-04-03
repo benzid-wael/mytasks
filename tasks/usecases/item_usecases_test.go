@@ -43,7 +43,11 @@ func (suite *ItemUseCaseTestSuite) Test_ItemUseCase_EditItem_UpdatesItemTitle() 
 	task, _ := testee.CreateTask("Learn golang", "@golang")
 	// When
 	title := "Learn golang in 2 weeks"
-	err := testee.EditItem(task.Id, title, "", nil, "@golang")
+	data := map[string]interface{}{
+		"title": title,
+		"tags":  []string{"@golang", "@coding"},
+	}
+	err := testee.EditItem(task.Id, data)
 	// Then
 	suite.Nil(err)
 	item := suite.Repo.GetItem(task.Id)

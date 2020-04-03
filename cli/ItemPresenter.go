@@ -62,6 +62,21 @@ func GetColorStatus(min, max, i int) COLOR {
 	}
 }
 
+const dateLayout string = "January 2, 2006"
+
+func formatDueDate(dueDate time.Time) (string, COLOR) {
+	now := time.Now()
+	color := GREY
+	if now.Format(dateLayout) == dueDate.Format(dateLayout) {
+		color = YELLOW
+	} else if now.Before(dueDate) {
+		color = GREEN
+	} else if now.After(dueDate) {
+		color = RED
+	}
+	return dueDate.Format(dateLayout), color
+}
+
 func (p *itemPresenter) PrintSummary(summary Summary, prefix string) error {
 	donePercentage := summary.GetDonePercentage()
 	color := GetColorStatus(0, summary.TasksCount, summary.DoneCount)
@@ -93,7 +108,7 @@ func (p *itemPresenter) renderItemForTimelineView(item entities.Manageable) stri
 	if item.HasStar() {
 		star = p.renderer.Colorify(" ★ ", YELLOW)
 	}
-	return fmt.Sprintf(
+	summary := fmt.Sprintf(
 		"%v. %v %v %v%v",
 		p.renderer.Colorify(item.GetId(), GREY),
 		p.getIcon(item),
@@ -101,6 +116,11 @@ func (p *itemPresenter) renderItemForTimelineView(item entities.Manageable) stri
 		star,
 		p.renderer.Colorify(tags, GREY),
 	)
+	if item.GetType() == "task" && item.GetDueDate() != nil {
+		dueDate := *item.GetDueDate()
+		summary = fmt.Sprintf("%v %v", summary, p.renderer.Colorify(formatDueDate(dueDate)))
+	}
+	return summary
 }
 
 func (p *itemPresenter) renderItemForBoardView(item entities.Manageable) string {
@@ -109,7 +129,7 @@ func (p *itemPresenter) renderItemForBoardView(item entities.Manageable) string 
 	if item.HasStar() {
 		star = p.renderer.Colorify(" ★ ", YELLOW)
 	}
-	return fmt.Sprintf(
+	summary := fmt.Sprintf(
 		"%v. %v %v %v%v",
 		p.renderer.Colorify(item.GetId(), GREY),
 		p.getIcon(item),
@@ -117,6 +137,11 @@ func (p *itemPresenter) renderItemForBoardView(item entities.Manageable) string 
 		star,
 		p.renderer.Colorify(duration, GREY),
 	)
+	if item.GetType() == "task" && item.GetDueDate() != nil {
+		dueDate := *item.GetDueDate()
+		summary = fmt.Sprintf("%v %v", summary, p.renderer.Colorify(formatDueDate(dueDate)))
+	}
+	return summary
 }
 
 func (p *itemPresenter) TimelineView(items entities.ItemCollection) error {

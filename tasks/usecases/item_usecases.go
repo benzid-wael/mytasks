@@ -13,7 +13,7 @@ type ItemUseCase interface {
 	GetItem(id int) entities.Manageable
 	GetNoteById(id int) (*entities.Note, error)
 	GetTaskById(id int) (*entities.Task, error)
-	EditItem(id int, title string, description string, starred *bool, tags ...string) error
+	EditItem(id int, data map[string]interface{}) error
 	CloneItem(id int) (entities.Manageable, error)
 	ArchiveItem(id int) error
 	RestoreItem(id int) error
@@ -43,16 +43,8 @@ func (iuc *itemUseCase) CreateTask(title string, tags ...string) (*entities.Task
 	return &task, err
 }
 
-func (iuc *itemUseCase) EditItem(id int, title string, description string, starred *bool, tags ...string) error {
-	newTitle := &title
-	newDescription := &description
-	if title == "" {
-		newTitle = nil
-	}
-	if description == "" {
-		newDescription = nil
-	}
-	return iuc.repository.UpdateItem(id, newTitle, newDescription, starred, tags...)
+func (iuc *itemUseCase) EditItem(id int, data map[string]interface{}) error {
+	return iuc.repository.UpdateItem(id, data)
 }
 
 func (iuc *itemUseCase) GetItem(id int) entities.Manageable {

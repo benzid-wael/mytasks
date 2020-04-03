@@ -14,6 +14,7 @@ type Manageable interface {
 	HasStar() bool
 	Star()
 	Unstar()
+	GetDueDate() *time.Time
 }
 
 type Item struct {
@@ -80,6 +81,10 @@ func (item *Item) Star() {
 
 func (item *Item) Unstar() {
 	item.IsStarred = false
+}
+
+func (item *Item) GetDueDate() *time.Time {
+	return nil
 }
 
 type ItemCollection []Manageable

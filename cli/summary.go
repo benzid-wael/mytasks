@@ -2,6 +2,7 @@ package cli
 
 import (
 	"github.com/benzid-wael/mytasks/tasks/domain/entities"
+	"math"
 )
 
 type Summary struct {
@@ -40,6 +41,7 @@ func (s *Summary) GetDonePercentage() float32 {
 	var percentage float32
 	if s.TasksCount != 0 && s.DoneCount > 0 && s.DoneCount < s.TasksCount {
 		percentage = float32(s.DoneCount) * 100 / float32(s.TasksCount)
+		percentage = float32(math.Round(float64(percentage)*100) / 100)
 	} else if s.TasksCount == s.DoneCount {
 		percentage = 100
 	}

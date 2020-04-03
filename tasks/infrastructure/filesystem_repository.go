@@ -171,23 +171,38 @@ func (repository *FilesystemItemRepository) CloneItem(id int) (entities.Manageab
 	return item, nil
 }
 
-func (repository *FilesystemItemRepository) UpdateItem(id int, title *string, description *string, starred *bool, tags ...string) error {
+func (repository *FilesystemItemRepository) UpdateItem(id int, data map[string]interface{}) error {
 	items := loadItems(repository.StorageDir)
 
 	if item, err := repository.getItem(items, id); err == nil {
-		if title != nil {
-			item["title"] = *title
+		if title, ok := data["title"]; ok && title != "" {
+			item["title"] = title
 		}
-		if description != nil {
-			item["description"] = *description
+		if description, ok := data["description"]; ok && description != "" {
+			item["description"] = description
 		}
-		if len(tags) > 0 {
-			item["tags"] = tags
-		}
-		if starred != nil {
+		if starred, ok := data["is_starred"]; ok {
 			item["is_starred"] = starred
 		}
+		if tags, ok := data["tags"]; ok && len(tags.([]string)) > 0 {
+			item["tags"] = tags
+		}
 
+		if itemType, ok := item["type"]; ok && itemType == "task" {
+			if priority, ok := data["priority"]; ok {
+				item["priority"] = priority
+			}
+			if completedPercentage, ok := data["completed_percentage"]; ok {
+				item["completed_percentage"] = completedPercentage
+			}
+			if value, ok := data["due_date"]; ok {
+				dueDate, ok := value.(time.Time)
+				if ok {
+					value = dueDate.Format(time.RFC3339)
+				}
+				item["due_date"] = value
+			}
+		}
 		// Update collection
 		key := getKey(id)
 		items[key] = item

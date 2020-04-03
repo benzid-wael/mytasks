@@ -15,6 +15,8 @@ var DummyItemFactory = factory.NewFactory(
 	return "note", nil
 }).Attr("Title", func(args factory.Args) (interface{}, error) {
 	return "note", nil
+}).Attr("Description", func(args factory.Args) (interface{}, error) {
+	return "my description", nil
 }).Attr("IsStarred", func(args factory.Args) (interface{}, error) {
 	return randomdata.Boolean(), nil
 }).Attr("Tags", func(args factory.Args) (interface{}, error) {

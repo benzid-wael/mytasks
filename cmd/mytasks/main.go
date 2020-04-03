@@ -2,15 +2,15 @@ package main
 
 import (
 	"github.com/benzid-wael/mytasks/cli"
-	"log"
 	"os"
 )
 
 func main() {
+	renderer := cli.NewRenderer()
 	app := cli.GetCliApp()
 
 	err := app.Run(os.Args)
 	if err != nil {
-		log.Fatal("error: ", err)
+		renderer.Error(err.Error()) // nolint
 	}
 }
