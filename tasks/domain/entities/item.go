@@ -15,6 +15,8 @@ type Manageable interface {
 	Star()
 	Unstar()
 	GetDueDate() *time.Time
+	HasTag(tag string) bool
+	HasAnyTag(tags ...string) bool
 }
 
 type Item struct {
@@ -87,8 +89,21 @@ func (item *Item) GetDueDate() *time.Time {
 	return nil
 }
 
-type ItemCollection []Manageable
+func (item *Item) HasTag(tag string) bool {
+	tags := item.GetTags()
+	for _, val := range tags {
+		if val == tag {
+			return true
+		}
+	}
+	return false
+}
 
-func (c ItemCollection) Len() int           { return len(c) }
-func (c ItemCollection) Swap(i, j int)      { c[i], c[j] = c[j], c[i] }
-func (c ItemCollection) Less(i, j int) bool { return c[i].GetId() < c[j].GetId() }
+func (item *Item) HasAnyTag(tags ...string) bool {
+	for _, tag := range tags {
+		if item.HasTag(tag) {
+			return true
+		}
+	}
+	return false
+}
