@@ -1,5 +1,9 @@
 package entities
 
+import (
+	"time"
+)
+
 type ItemCollection []Manageable
 type ItemPredicate func(item Manageable) bool
 
@@ -36,8 +40,7 @@ func (c ItemCollection) FilterByStatus(status string) ItemCollection {
 
 func (c ItemCollection) FilterPending() ItemCollection {
 	return c.Filter(func(item Manageable) bool {
-		status := TaskStatus(item.GetStatus())
-		return status == ToDo || status == InProgress || status == Stopped
+		return IsPending(item.GetStatus())
 	})
 }
 
@@ -56,5 +59,19 @@ func (c ItemCollection) FilterByTags(tags ...string) ItemCollection {
 func (c ItemCollection) FilterByType(kind string) ItemCollection {
 	return c.Filter(func(item Manageable) bool {
 		return item.GetType() == kind
+	})
+}
+
+func (c ItemCollection) FilterByCreationDate(fromDate, toDate *time.Time) ItemCollection {
+	return c.Filter(func(item Manageable) bool {
+		createdAt := item.GetCreationDateTime()
+		if fromDate != nil && toDate != nil {
+			return fromDate.Before(createdAt) && toDate.After(createdAt)
+		} else if fromDate != nil {
+			return fromDate.Before(createdAt)
+		} else if toDate != nil {
+			return toDate.After(createdAt)
+		}
+		return true
 	})
 }

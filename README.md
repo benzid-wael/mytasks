@@ -1,5 +1,6 @@
 # mytasks
- MyTasks is a simple solution to manage your tasks and notes across multiple boards from within your terminal.
+MyTasks is a simple solution to manage your tasks and notes across multiple boards from within your terminal.
+MyTasks is heavily inspired by [taskbook](https://github.com/klaussinani/taskbook) with some minor improvements.
 
 ## Features
  - Organize your tasks and notes

@@ -3,12 +3,13 @@ package cli
 import (
 	"fmt"
 	"github.com/benzid-wael/mytasks/tasks/domain/entities"
+	"sort"
 	"time"
 )
 
 type ItemPresenter interface {
 	TimelineView(items entities.ItemCollection) error
-	BoardView(items entities.ItemCollection) error
+	BoardView(items entities.ItemCollection, tags ...string) error
 }
 
 type itemPresenter struct {
@@ -110,13 +111,14 @@ func (p *itemPresenter) renderItemForTimelineView(item entities.Manageable) stri
 	}
 	summary := fmt.Sprintf(
 		"%v. %v %v %v%v",
-		p.renderer.Colorify(item.GetId(), GREY),
+		p.renderer.Colorify(fmt.Sprintf("%3d", item.GetId()), GREY),
 		p.getIcon(item),
 		item.GetTitle(),
 		star,
 		p.renderer.Colorify(tags, GREY),
 	)
-	if item.GetType() == "task" && item.GetDueDate() != nil {
+
+	if entities.IsPending(item.GetStatus()) && item.GetDueDate() != nil {
 		dueDate := *item.GetDueDate()
 		summary = fmt.Sprintf("%v %v", summary, p.renderer.Colorify(formatDueDate(dueDate)))
 	}
@@ -131,13 +133,13 @@ func (p *itemPresenter) renderItemForBoardView(item entities.Manageable) string 
 	}
 	summary := fmt.Sprintf(
 		"%v. %v %v %v%v",
-		p.renderer.Colorify(item.GetId(), GREY),
+		p.renderer.Colorify(fmt.Sprintf("%3d", item.GetId()), GREY),
 		p.getIcon(item),
 		item.GetTitle(),
 		star,
 		p.renderer.Colorify(duration, GREY),
 	)
-	if item.GetType() == "task" && item.GetDueDate() != nil {
+	if entities.IsPending(item.GetStatus()) && item.GetDueDate() != nil {
 		dueDate := *item.GetDueDate()
 		summary = fmt.Sprintf("%v %v", summary, p.renderer.Colorify(formatDueDate(dueDate)))
 	}
@@ -153,13 +155,38 @@ func (p *itemPresenter) TimelineView(items entities.ItemCollection) error {
 	return p.PrintSummary(summary, "  ")
 }
 
-func (p *itemPresenter) BoardView(items entities.ItemCollection) error {
+func (p *itemPresenter) BoardView(items entities.ItemCollection, tags ...string) error {
 	flattened := FlatByTags(items)
 	timeline := GroupBy(flattened, GroupByTag)
-	summary := Summarize(items)
-	for _, group := range timeline {
-		group.Print(p.renderer, p.renderItemForBoardView)
+	sort.Sort(timeline)
+
+	if len(tags) >= 1 {
+		timeline = Filter(timeline, func(group ItemGroup) bool {
+			for _, tag := range tags {
+				if tag == group.Name {
+					return true
+				}
+			}
+			return false
+		})
+
+		// Print Boards
+		for _, tag := range tags {
+			for _, group := range timeline {
+				if group.Name == tag {
+					group.Print(p.renderer, p.renderItemForBoardView)
+				}
+			}
+		}
+	} else {
+		// Print Boards
+		for _, group := range timeline {
+			group.Print(p.renderer, p.renderItemForBoardView)
+		}
 	}
+
+	// Print Summary
+	summary := Summarize(items)
 	return p.PrintSummary(summary, "  ")
 }
 

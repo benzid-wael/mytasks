@@ -6,7 +6,7 @@ import (
 	notificator "github.com/benzid-wael/mytasks/notification"
 	"github.com/benzid-wael/mytasks/tasks"
 	"github.com/benzid-wael/mytasks/tasks/domain/entities"
-	"github.com/urfave/cli"
+	cli "github.com/urfave/cli/v2"
 	"os"
 	"time"
 )
@@ -23,11 +23,11 @@ func main() {
 		Description: "Be reminded before your task is due!",
 		Compiled:    time.Time{},
 		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:   "workspace",
-				Usage:  "Workspace name",
-				Value:  config.DefaultWorkplace,
-				EnvVar: "MYTASKS_WORKSPACE",
+			&cli.StringFlag{
+				Name:    "workspace",
+				Usage:   "Workspace name",
+				Value:   config.DefaultWorkplace,
+				EnvVars: []string{"MYTASKS_WORKSPACE", "WORKSPACE"},
 			},
 		},
 	}
@@ -37,7 +37,7 @@ func main() {
 		AppName:     "MyTasks",
 	})
 
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name:  "notify",
 			Usage: "Create notifications for your tasks",
@@ -45,7 +45,7 @@ func main() {
 				&cli.IntFlag{Name: "before", Usage: "How many minutes to be reminded before the task is due"},
 			},
 			Action: func(c *cli.Context) error {
-				itemUseCase := cli2.GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := cli2.GetItemUseCase(c.String("workspace"), config)
 				items := itemUseCase.GetItems()
 
 				now := time.Now()

@@ -23,11 +23,11 @@ func getLogs(logs interface{}) []TaskLog {
 	if logs == nil {
 		return []TaskLog{}
 	}
-	result := make([]TaskLog, 0, len(logs.([]interface{})))
-	for idx, log := range logs.([]interface{}) {
+	result := make([]TaskLog, 0)
+	for _, log := range logs.([]interface{}) {
 		startedAt, _ := time.Parse(time.RFC3339, log.(map[string]interface{})["started_at"].(string))
 		pausedAt, _ := time.Parse(time.RFC3339, log.(map[string]interface{})["paused_at"].(string))
-		result[idx] = TaskLog{StartedAt: startedAt, PausedAt: pausedAt}
+		result = append(result, TaskLog{StartedAt: startedAt, PausedAt: pausedAt})
 	}
 	return result
 }

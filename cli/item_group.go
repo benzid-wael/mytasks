@@ -12,10 +12,13 @@ type ItemGroup struct {
 	Items entities.ItemCollection
 }
 
+type ItemGroupCollection []ItemGroup
+
 type ItemSummarizer func(item entities.Manageable) string
 type GetKey func(item entities.Manageable) string
+type Predicate func(group ItemGroup) bool
 
-func GroupBy(items entities.ItemCollection, keyFunc GetKey) []ItemGroup {
+func GroupBy(items entities.ItemCollection, keyFunc GetKey) ItemGroupCollection {
 	itemsByKey := make(map[string]entities.ItemCollection, len(items))
 	for _, item := range items {
 		if item == nil {
@@ -80,6 +83,16 @@ func FlatByTags(items entities.ItemCollection) entities.ItemCollection {
 	return newItems
 }
 
+func Filter(summary ItemGroupCollection, predicate Predicate) ItemGroupCollection {
+	var result []ItemGroup
+	for _, group := range summary {
+		if predicate(group) {
+			result = append(result, group)
+		}
+	}
+	return result
+}
+
 func (g *ItemGroup) Print(renderer Renderer, summarizer ItemSummarizer) {
 	summary := Summarize(g.Items)
 
@@ -93,3 +106,8 @@ func (g *ItemGroup) Print(renderer Renderer, summarizer ItemSummarizer) {
 		fmt.Printf("    %v\n", summarizer(item))
 	}
 }
+
+// Sort Protocol
+func (c ItemGroupCollection) Len() int           { return len(c) }
+func (c ItemGroupCollection) Swap(i, j int)      { c[i], c[j] = c[j], c[i] }
+func (c ItemGroupCollection) Less(i, j int) bool { return c[i].Name < c[j].Name }

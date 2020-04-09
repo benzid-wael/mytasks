@@ -9,7 +9,7 @@ import (
 	"github.com/benzid-wael/mytasks/tasks/domain/entities"
 	"github.com/benzid-wael/mytasks/tasks/infrastructure"
 	"github.com/benzid-wael/mytasks/tasks/usecases"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 	"path"
 	"strconv"
 	"strings"
@@ -52,44 +52,13 @@ func GetItemUseCase(workspace string, config AppConfig) usecases.ItemUseCase {
 	return usecases.NewItemUseCase(itemRepository)
 }
 
-func getDate(value string) (time.Time, error) {
-	format := "2006-01-02"
-	date, err := time.Parse(format, value)
-	if err != nil {
-		return date, errors.New("invalid date, expected format: YYYY-MM-DD")
-	}
-	return date, nil
-}
-
-func getPriority(value string) (entities.Priority, error) {
-	priorityMap := map[string]entities.Priority{
-		"critical": entities.CRITICAL,
-		"high":     entities.HIGH,
-		"mediun":   entities.MEDIUM,
-		"low":      entities.LOW,
-		"trivial":  entities.TRIVIAL,
-	}
-
-	priority, ok := priorityMap[value]
-	if !ok {
-		options := make([]string, 0, len(priorityMap))
-		for key := range priorityMap {
-			options = append(options, key)
-		}
-		msg := fmt.Sprintf(
-			"Unknown priority: %v. Valid options: %v",
-			value,
-			strings.Join(options, ", "),
-		)
-		return entities.UNKNOWN, errors.New(msg)
-	}
-	return priority, nil
-}
-
 func GetCliApp() *cli.App {
 	dataDir := "~/.mytasks"
 	appConfigPath := tasks.ExpandPath("~/.mytasks.json")
 	config := GetAppConfig(appConfigPath, dataDir)
+
+	renderer := NewRenderer()
+	itemPresenter := NewItemPresenter(renderer)
 
 	app := cli.App{
 		Name:                 "mytasks",
@@ -98,24 +67,27 @@ func GetCliApp() *cli.App {
 		Description:          "📓 Manage your tasks and notes from the command line",
 		Compiled:             time.Time{},
 		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:   "workspace",
-				Usage:  "Workspace name",
-				Value:  config.DefaultWorkplace,
-				EnvVar: "MYTASKS_WORKSPACE",
+			&cli.StringFlag{
+				Name:    "workspace",
+				Usage:   "Workspace name",
+				Value:   config.DefaultWorkplace,
+				EnvVars: []string{"MYTASKS_WORKSPACE"},
 			},
+		},
+		Action: func(c *cli.Context) error {
+			itemUseCase := GetItemUseCase(c.String("workspace"), config)
+			tags := []string{"Today", "Tomorrow", "Next List"}
+			items := itemUseCase.GetItems().FilterByTags(tags...).FilterPending()
+			return itemPresenter.BoardView(items, tags...)
 		},
 	}
 
-	renderer := NewRenderer()
-	itemPresenter := NewItemPresenter(renderer)
-
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name:  "timeline",
 			Usage: "Display Timeline View",
 			Action: func(c *cli.Context) error {
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				items := itemUseCase.GetItems()
 				return itemPresenter.TimelineView(items)
 			},
@@ -124,7 +96,7 @@ func GetCliApp() *cli.App {
 			Name:  "board",
 			Usage: "Display Board View",
 			Action: func(c *cli.Context) error {
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				items := itemUseCase.GetItems()
 				return itemPresenter.BoardView(items)
 			},
@@ -138,7 +110,7 @@ func GetCliApp() *cli.App {
 				&cli.StringSliceFlag{Name: "tags"},
 			},
 			Action: func(c *cli.Context) error {
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				tags := c.StringSlice("tags")
 				title := c.String("title")
 				note, err := itemUseCase.CreateNote(title, tags...)
@@ -169,6 +141,7 @@ func GetCliApp() *cli.App {
 					}
 					data["priority"] = priority
 				}
+
 				if c.String("due-date") != "" {
 					value, err := getDate(c.String("due-date"))
 					if err != nil {
@@ -177,7 +150,7 @@ func GetCliApp() *cli.App {
 					data["due_date"] = value
 				}
 
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				tags := c.StringSlice("tags")
 				title := c.String("title")
 				task, err2 := itemUseCase.CreateTask(title, tags...)
@@ -199,7 +172,7 @@ func GetCliApp() *cli.App {
 				&cli.IntFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				id := c.Int("id")
 				item, err := itemUseCase.CloneItem(id)
 				if err == nil {
@@ -223,7 +196,7 @@ func GetCliApp() *cli.App {
 				&cli.StringSliceFlag{Name: "tags"},
 			},
 			Action: func(c *cli.Context) error {
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				id := c.Int("id")
 				data := map[string]interface{}{
 					"title":       c.String("title"),
@@ -266,7 +239,7 @@ func GetCliApp() *cli.App {
 				&cli.IntSliceFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				ids := c.IntSlice("id")
 				data := map[string]interface{}{
 					"is_starred": true,
@@ -285,7 +258,7 @@ func GetCliApp() *cli.App {
 				&cli.IntSliceFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				ids := c.IntSlice("id")
 				data := map[string]interface{}{
 					"is_starred": false,
@@ -305,7 +278,7 @@ func GetCliApp() *cli.App {
 				&cli.IntSliceFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				ids := c.IntSlice("id")
 
 				archiveFunc := func(id int, c *cli.Context) error {
@@ -322,7 +295,7 @@ func GetCliApp() *cli.App {
 				&cli.IntSliceFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				ids := c.IntSlice("id")
 
 				restoreFunc := func(id int, c *cli.Context) error {
@@ -339,7 +312,7 @@ func GetCliApp() *cli.App {
 				&cli.IntSliceFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				ids := c.IntSlice("id")
 
 				deleteFunc := func(id int, c *cli.Context) error {
@@ -356,7 +329,7 @@ func GetCliApp() *cli.App {
 				&cli.BoolFlag{Name: "title"},
 			},
 			Action: func(c *cli.Context) error {
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				id := c.Int("id")
 				item := itemUseCase.GetItem(id)
 				value := ""
@@ -382,7 +355,7 @@ func GetCliApp() *cli.App {
 				&cli.IntFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				id := c.Int("id")
 				err := itemUseCase.TriggerEvent(id, "start")
 				if err == nil {
@@ -398,7 +371,7 @@ func GetCliApp() *cli.App {
 				&cli.IntFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				id := c.Int("id")
 				err := itemUseCase.TriggerEvent(id, "stop")
 				if err == nil {
@@ -414,7 +387,7 @@ func GetCliApp() *cli.App {
 				&cli.IntFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				id := c.Int("id")
 				err := itemUseCase.TriggerEvent(id, "complete")
 				if err == nil {
@@ -430,7 +403,7 @@ func GetCliApp() *cli.App {
 				&cli.IntFlag{Name: "id", Required: true},
 			},
 			Action: func(c *cli.Context) error {
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				id := c.Int("id")
 				err := itemUseCase.TriggerEvent(id, "cancel")
 				if err == nil {
@@ -447,16 +420,18 @@ func GetCliApp() *cli.App {
 				&cli.StringFlag{Name: "status"},
 				&cli.StringFlag{Name: "type"},
 				&cli.StringSliceFlag{Name: "tags"},
-				&cli.StringSliceFlag{Name: "exclude", Usage: "Tags to be excluded"},
 				&cli.StringFlag{Name: "view", Usage: "Display mode: timeline or board", Value: "timeline"},
 				&cli.StringFlag{Name: "due-date"},
+				&cli.StringFlag{Name: "created-before"},
+				&cli.StringFlag{Name: "created-after"},
+				&cli.StringSliceFlag{Name: "exclude", Usage: "Tags to be excluded"},
 			},
 			Action: func(c *cli.Context) error {
 				view := c.String("view")
 				if view != "timeline" && view != "board" {
 					return errors.New("Unsupported view: " + view)
 				}
-				itemUseCase := GetItemUseCase(c.GlobalString("workspace"), config)
+				itemUseCase := GetItemUseCase(c.String("workspace"), config)
 				items := itemUseCase.GetItems()
 
 				status := c.String("status")
@@ -466,15 +441,32 @@ func GetCliApp() *cli.App {
 					items = items.FilterByStatus(status)
 				}
 
+				kind := c.String("type")
+				if kind != "" {
+					items = items.FilterByType(kind)
+				}
+
 				tags := c.StringSlice("tags")
 				if len(tags) > 0 {
 					items = items.FilterByTags(tags...)
 				}
 
-				kind := c.String("type")
-				if kind != "" {
-					items = items.FilterByType(kind)
+				dueDateString := c.String("due-date")
+				if dueDateString != "" {
+					dueDate, err := getDate(dueDateString)
+					if err != nil {
+						return err
+					}
+					items = items.Filter(func(item entities.Manageable) bool {
+						itemDueDate := item.GetDueDate()
+						return itemDueDate != nil && dueDate.Equal(*itemDueDate)
+					})
 				}
+
+				items = items.FilterByCreationDate(
+					getDateOrNil(c.String("created-after")),
+					getDateOrNil(c.String("created-before")),
+				)
 
 				excludeTags := c.StringSlice("exclude")
 				for _, tag := range excludeTags {

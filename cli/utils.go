@@ -2,13 +2,18 @@ package cli
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"github.com/benzid-wael/mytasks/tasks/domain/entities"
 	"io"
 	"log"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
+
+const DateLayout string = "2006-01-02"
 
 func CaptureOutput(f func()) string {
 	reader, writer, err := os.Pipe()
@@ -107,4 +112,54 @@ func GetDurationText(a, b time.Time) string {
 		duration = fmt.Sprintf("%vs", sec)
 	}
 	return duration
+}
+
+func getDate(value string) (time.Time, error) {
+	now := time.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	knownShortcuts := map[string]time.Time{
+		"today":              today,
+		"yesterday":          today.AddDate(0, 0, -1),
+		"day-after-tomorrow": today.AddDate(0, 0, 2),
+	}
+	if date, ok := knownShortcuts[value]; ok {
+		return date, nil
+	}
+	date, err := time.Parse(DateLayout, value)
+	if err != nil {
+		return date, errors.New("invalid date, expected format: YYYY-MM-DD")
+	}
+	return date, nil
+}
+
+func getDateOrNil(value string) *time.Time {
+	if date, err := getDate(value); err == nil {
+		return &date
+	}
+	return nil
+}
+
+func getPriority(value string) (entities.Priority, error) {
+	priorityMap := map[string]entities.Priority{
+		"critical": entities.CRITICAL,
+		"high":     entities.HIGH,
+		"mediun":   entities.MEDIUM,
+		"low":      entities.LOW,
+		"trivial":  entities.TRIVIAL,
+	}
+
+	priority, ok := priorityMap[value]
+	if !ok {
+		options := make([]string, 0, len(priorityMap))
+		for key := range priorityMap {
+			options = append(options, key)
+		}
+		msg := fmt.Sprintf(
+			"Unknown priority: %v. Valid options: %v",
+			value,
+			strings.Join(options, ", "),
+		)
+		return entities.UNKNOWN, errors.New(msg)
+	}
+	return priority, nil
 }
