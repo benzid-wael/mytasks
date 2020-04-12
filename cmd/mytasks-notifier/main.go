@@ -19,7 +19,7 @@ func main() {
 
 	app := cli.App{
 		Name:        "mytasks-notifier",
-		Version:     "v0.0.1",
+		Version:     "v0.0.2",
 		Description: "Be reminded before your task is due!",
 		Compiled:    time.Time{},
 		Flags: []cli.Flag{

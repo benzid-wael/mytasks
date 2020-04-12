@@ -61,7 +61,7 @@ func GetCliApp() *cli.App {
 
 	app := cli.App{
 		Name:                 "mytasks",
-		Version:              "v0.0.1",
+		Version:              "v0.0.2",
 		EnableBashCompletion: true,
 		Description:          "📓 Manage your tasks and notes from the command line",
 		Compiled:             time.Time{},
