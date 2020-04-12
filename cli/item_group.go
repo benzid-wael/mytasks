@@ -13,10 +13,11 @@ type ItemGroup struct {
 }
 
 type ItemGroupCollection []ItemGroup
-
 type ItemSummarizer func(item entities.Manageable) string
 type GetKey func(item entities.Manageable) string
 type Predicate func(group ItemGroup) bool
+
+const MainBoardName = "My Board"
 
 func GroupBy(items entities.ItemCollection, keyFunc GetKey) ItemGroupCollection {
 	itemsByKey := make(map[string]entities.ItemCollection, len(items))
@@ -55,15 +56,14 @@ func GroupByTag(item entities.Manageable) string {
 	if len(item.GetTags()) > 0 {
 		return item.GetTags()[0]
 	}
-	return "My Board"
+	return MainBoardName
 }
 
 func FlatByTags(items entities.ItemCollection) entities.ItemCollection {
-	newItems := make(entities.ItemCollection, len(items)*5)
-	index := 0
+	newItems := make(entities.ItemCollection, 0, len(items)*2)
 	for _, item := range items {
 		tags := item.GetTags()
-		if len(tags) > 0 {
+		if len(tags) > 1 {
 			for _, tag := range tags {
 				var payload map[string]interface{}
 				data, _ := json.Marshal(item)
@@ -72,12 +72,10 @@ func FlatByTags(items entities.ItemCollection) entities.ItemCollection {
 					log.Fatal("Cannot unmarshal item with ID: ", item.GetId())
 				}
 				payload["tags"] = []interface{}{interface{}(tag)}
-				newItems[index] = entities.CreateItem(payload)
-				index++
+				newItems = append(newItems, entities.CreateItem(payload))
 			}
 		} else {
-			newItems[index] = item
-			index++
+			newItems = append(newItems, item)
 		}
 	}
 	return newItems

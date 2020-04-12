@@ -30,7 +30,6 @@ func BulkFunc(ids []int, successMsgPrefix string, renderer Renderer, c *cli.Cont
 		} else {
 			succeed = append(succeed, strconv.Itoa(id)) // nolint
 		}
-		return err // nolint
 	}
 
 	fmt.Println()
