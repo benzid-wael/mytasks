@@ -58,11 +58,9 @@ func (item *Item) GetTags() []string {
 	return item.Tags
 }
 
-func (item *Item) Tags() []string {
+func (item *Item) GetAllTags() []string {
 	return item.Tags
 }
-
-
 
 func (item *Item) GetType() string {
 	return item.Type
