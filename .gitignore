@@ -19,6 +19,8 @@
 
 # testing
 coverage.txt
+coverage.out
+report.json
 
 # Mac
 .DS_Store

@@ -32,10 +32,10 @@ jobs:
       run: go build -v ./...
 
     - name: Test
-      run: go test -json -v ./... > report.json
+      run: go test -cover -json -v ./... > report.json
 
     - name: Coverage
-      run: go test -coverprofile=coverage.out
+      run: go test -coverprofile=coverage.out ./...
 
     - name: SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@master
