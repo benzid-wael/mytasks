@@ -16,8 +16,8 @@
  - Tasks due date & custom notification
  - Custom template
  - Profile support
- 
- ## Installation
+
+## Installation
  
  You can install the package using go tool
  
@@ -64,3 +64,7 @@ As per now, we support two display modes:
 
 * Timeline view where items are grouped per creation date
 * Board view where items are grouped per board. A board is identified by a unique tag
+
+
+## Development
+TO be continued
