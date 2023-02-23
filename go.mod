@@ -11,6 +11,6 @@ require (
 	github.com/pkg/errors v0.8.0 // indirect
 	github.com/stretchr/testify v1.5.1
 	github.com/urfave/cli v1.22.3
-	golang.org/x/text v0.3.0 // indirect
+	golang.org/x/text v0.3.8 // indirect
 	gotest.tools v2.1.0+incompatible
 )
